@@ -11,6 +11,7 @@ type IconLinkButtonProps = {
   labelClassName?: string;
   iconClassName?: string;
   size?: "sm" | "regular" | "lg";
+  isExternal?: boolean;
 };
 
 export default function IconLinkButton({
@@ -21,6 +22,7 @@ export default function IconLinkButton({
   labelClassName,
   iconClassName,
   size = "regular",
+  isExternal = false,
 }: IconLinkButtonProps) {
   const sizeClasses = {
     sm: "text-sm p-2",
@@ -36,9 +38,12 @@ export default function IconLinkButton({
         sizeClasses[size],
         className
       )}
+      target={isExternal ? "_blank" : "_self"}
     >
       <Box className={cn("text-gray-600", iconClassName)}>{icon}</Box>
-      <span className={cn("mt-1 text-gray-800", labelClassName)}>{label}</span>
+      <span className={cn("mt-1 text-gray-800 text-nowrap", labelClassName)}>
+        {label}
+      </span>
     </Link>
   );
 }

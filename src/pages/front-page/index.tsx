@@ -3,6 +3,7 @@ import IconLinkButton from "@/components/atoms/buttons/icon-link-button";
 import { Box, Grid } from "@/components/atoms/layout";
 import { TextEffect } from "@/components/atoms/typography/text-effect";
 import AnimatingContainer from "@/components/Layout/AnimatingContainer";
+import { APP_CONFIG } from "@/constants/app-config";
 import { APP_PATHS } from "@/constants/path-config";
 
 const NOTES_ICON = "/icons/notes.png";
@@ -11,6 +12,7 @@ const SYLLABUS_ICON = "/icons/syllabus.png";
 const Q_BANK_ICON = "/icons/q-bank.png";
 const RESULTS_ICON = "/icons/result.png";
 const JOKES_ICON = "/icons/joke.png";
+const SUBMIT_ICON = "/icons/submit.png";
 
 const FRONT_PAGE_ITEMS = [
   {
@@ -49,6 +51,13 @@ const FRONT_PAGE_ITEMS = [
     icon: <img src={JOKES_ICON} alt="Jokes" />,
     href: APP_PATHS.JOKES,
   },
+  {
+    id: 7,
+    title: "Submit Notes",
+    icon: <img src={SUBMIT_ICON} alt="Submit" />,
+    href: APP_CONFIG.submitLink,
+    isExternal: true,
+  },
 ];
 
 function FrontPage() {
@@ -69,6 +78,7 @@ function FrontPage() {
               icon={item?.icon}
               labelClassName="font-semibold"
               iconClassName="w-16 h-16"
+              isExternal={item?.isExternal}
             />
           ))}
         </Grid>

@@ -7,6 +7,7 @@ export const APP_CONFIG = {
   colorSecondary: "#000000",
   appLink: "https://play.google.com/store/apps/details?id=com.hawkers.notebot",
   botLink: "https://www.messenger.com/t/103148557940299",
+  submitLink: "https://forms.gle/RjPXedjRDim4YE6P8",
   founder: {
     name: "Afshin Nahian Tripto",
     github: "https://github.com/TriptoAfsin",
@@ -46,7 +47,7 @@ export const APP_HEADER_MENU = [
     id: 3,
     icon: <HandHeart size={20} strokeWidth={1.5} />,
     label: "Submit Notes",
-    href: "https://forms.gle/RjPXedjRDim4YE6P8",
+    href: APP_CONFIG.submitLink,
     isExternal: true,
   },
 ];

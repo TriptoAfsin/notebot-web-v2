@@ -1,8 +1,5 @@
 export const APP_PATHS = {
   HOME: "/",
-  NOTEBOT_MESSENGER: "/",
-  BUTEX_PHONE_BOOK: "/",
-  SUBMIT_NOTES: "/",
   ABOUT: "/about",
   NOTES: "/notes",
   CONTACT: "/contact",
