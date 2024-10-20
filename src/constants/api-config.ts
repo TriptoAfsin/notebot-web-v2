@@ -1,6 +1,7 @@
 const BASE_URL = import.meta.env.VITE_API_URL;
 export const API_CONFIG = {
   BASE_URL: BASE_URL,
+  PLATFORM_STATUS: `${BASE_URL}`,
   NOTES_ROOT: `${BASE_URL}/app/notes`,
   NOTES_LEVEL: (level: number | string) => `${API_CONFIG.NOTES_ROOT}/${level}`,
   NOTES_SUBJECT_DETAILS: (level: number | string, subject: string) =>
@@ -25,6 +26,6 @@ export const API_CONFIG = {
     `${API_CONFIG.SYLLABUS_ROOT}/${batch}`,
   SYLLABUS_BATCH_DEPT: (batch: number | string, dept: string) =>
     `${API_CONFIG.SYLLABUS_BATCH(batch)}/${dept}`,
-  RESULTS_ROOT: `${BASE_URL}/results`,
+  RESULTS: `${BASE_URL}/results`,
   JOKES: `${BASE_URL}/app/jokes`,
 };
