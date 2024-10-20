@@ -1,4 +1,5 @@
 import { Box } from "@/components/atoms/layout";
+import ExternalLinkCardSkeleton from "@/components/atoms/skeletons/external-link-card-skeleton";
 import { TextEffect } from "@/components/atoms/typography/text-effect";
 import ErrorComponent from "@/components/molecules/error-comonent";
 import {
@@ -9,8 +10,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
 import { APP_PATHS } from "@/constants/path-config";
 import { useGetResults } from "@/hooks/networking/content/results";
 import { ExternalLink } from "lucide-react";
@@ -63,15 +63,7 @@ export default function ResultsPage() {
             {isLoading || isFetching
               ? // Loading skeletons
                 Array.from({ length: 6 }).map((_, index) => (
-                  <Card key={index}>
-                    <CardHeader>
-                      <Skeleton className="w-2/3 h-4" />
-                    </CardHeader>
-                    <CardContent>
-                      <Skeleton className="w-full h-4 mb-2" />
-                      <Skeleton className="w-4/5 h-4" />
-                    </CardContent>
-                  </Card>
+                  <ExternalLinkCardSkeleton key={index} />
                 ))
               : // Actual results
                 results?.map(result => (

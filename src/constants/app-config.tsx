@@ -5,6 +5,8 @@ export const APP_CONFIG = {
   logoIcon: "/notebot-web.png",
   colorPrimary: "#377fcc",
   colorSecondary: "#000000",
+  appLink: "https://play.google.com/store/apps/details?id=com.hawkers.notebot",
+  botLink: "https://www.messenger.com/t/103148557940299",
   founder: {
     name: "Afshin Nahian Tripto",
     github: "https://github.com/TriptoAfsin",
@@ -20,21 +22,31 @@ export const APP_HEADER_MENU = [
     href: "/",
   },
   {
+    id: 12121,
+    icon: <MessageCircle size={20} strokeWidth={1.5} />,
+    label: "NoteBot App",
+    href: APP_CONFIG.appLink,
+    isExternal: true,
+  },
+  {
     id: 1,
     icon: <MessageCircle size={20} strokeWidth={1.5} />,
     label: "NoteBot Messenger",
-    href: "/",
+    href: APP_CONFIG.botLink,
+    isExternal: true,
   },
   {
     id: 2,
     icon: <Phone size={20} strokeWidth={1.5} />,
     label: "BUTEX PhoneBook",
-    href: "/",
+    href: "https://triptoafsin.github.io/butex-phonebook-v2/",
+    isExternal: true,
   },
   {
     id: 3,
     icon: <HandHeart size={20} strokeWidth={1.5} />,
     label: "Submit Notes",
-    href: "/",
+    href: "https://forms.gle/RjPXedjRDim4YE6P8",
+    isExternal: true,
   },
 ];

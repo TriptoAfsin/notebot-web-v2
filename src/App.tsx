@@ -1,17 +1,19 @@
 import { Box } from "@/components/atoms/layout";
 import Footer from "@/components/atoms/layout/footer";
 import Header from "@/components/atoms/layout/header";
+import { Spinner } from "@/components/atoms/spinner/spinner";
 import AboutPage from "@/pages/about";
 import FrontPage from "@/pages/front-page";
+import ResultsPage from "@/pages/results";
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./App.css";
-import { Spinner } from "./components/atoms/spinner/spinner";
-import ResultsPage from "./pages/results";
 
+import LabReportsPage from "@/pages/lab-reports";
+import NotesPage from "@/pages/notes";
+import SyllabusBatch from "@/pages/syllabus/batch/syllabus-batch";
+import SyllabusDept from "@/pages/syllabus/dept/syllabus-dept";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import LabReportsPage from "./pages/lab-reports";
-import NotesPage from "./pages/notes";
 
 // Lazy load the QBankPage
 const QBankPage = lazy(() => import("@/pages/q-bank"));
@@ -37,6 +39,8 @@ function App() {
               <Route path="/jokes" element={<JokesPage />} />
               <Route path="/notes" element={<NotesPage />} />
               <Route path="/lab-reports" element={<LabReportsPage />} />
+              <Route path="/syllabus/:batch" element={<SyllabusBatch />} />
+              <Route path="/syllabus/:batch/:dept" element={<SyllabusDept />} />
             </Routes>
           </Suspense>
         </QueryClientProvider>

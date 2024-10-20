@@ -10,6 +10,9 @@ export const APP_PATHS = {
   QBANKS: "/q-bank",
   NOTICES: "/notices",
   SYLLABUS: "/syllabus",
+  SYLLABUS_BATCH: (batch: number | string) => `/syllabus/${batch}`,
+  SYLLABUS_BATCH_DEPT: (batch: number | string, dept: string) =>
+    `/syllabus/${batch}/${dept}`,
   RESULTS: "/results",
   ROUTINES: "/routines",
   NOTES_LEVEL_DETAILS: (level: string) => `/notes/${level}`,

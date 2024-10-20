@@ -50,6 +50,7 @@ function HeaderLinkMobile({ item }: { item: Record<string, any> }) {
         "py-2 hover:bg-accent flex items-center gap-2",
         fullPath === item.href ? "font-semibold" : ""
       )}
+      target={item.isExternal ? "_blank" : "_self"}
     >
       {item.icon}
       {item.label}

@@ -54,7 +54,7 @@ const FRONT_PAGE_ITEMS = [
 function FrontPage() {
   return (
     <Box className="flex flex-col items-center min-h-screen p-4">
-      <BrandLogo className="w-16 h-16 mb-5" />
+      <BrandLogo className="w-24 h-24 mb-5" />
       <TextEffect className="text-xl font-semibold">NoteBot Web</TextEffect>
       <AnimatingContainer animation="slideDown">
         <Grid

@@ -1,4 +1,5 @@
 import { Box } from "@/components/atoms/layout";
+import NavigationLinkCard from "@/components/atoms/skeletons/navigation-link-card";
 import RootContentSkeleton from "@/components/atoms/skeletons/root-content-skeleton";
 import { Text } from "@/components/atoms/typography/text";
 import { TextEffect } from "@/components/atoms/typography/text-effect";
@@ -11,13 +12,18 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Card, CardContent } from "@/components/ui/card";
 import { APP_PATHS } from "@/constants/path-config";
-import { useGetSyllabus } from "@/hooks/networking/content/syllabus";
-import { Link } from "react-router-dom";
+import { useGetBatchSyllabus } from "@/hooks/networking/content/syllabus-batch";
+import { useLocation } from "react-router-dom";
 
-export default function SyllabusPage() {
-  const { data, isLoading, error, refetch } = useGetSyllabus();
+export default function SyllabusBatch() {
+  const location = useLocation();
+  // Extract batch from the URL path
+  const batch = location.pathname.split("/").pop();
+
+  const { data, isLoading, error, refetch } = useGetBatchSyllabus(
+    batch as string
+  );
 
   if (error) {
     return (
@@ -27,8 +33,6 @@ export default function SyllabusPage() {
       />
     );
   }
-
-  console.log(data);
 
   return (
     <Box className="container p-6 mx-auto">
@@ -42,29 +46,32 @@ export default function SyllabusPage() {
           <BreadcrumbItem>
             <BreadcrumbLink href={APP_PATHS.SYLLABUS}>Syllabus</BreadcrumbLink>
           </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink>{`Batch ${batch}`}</BreadcrumbLink>
+          </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <TextEffect className="flex items-center mb-6 text-xl font-bold">
-        📗 Choose Batch
+        📗 Choose Syllabus
       </TextEffect>
       <AnimatingContainer animation="slideDown">
         {isLoading ? (
-          <RootContentSkeleton />
+          Array.from({ length: 6 }).map((_, index) => (
+            <RootContentSkeleton key={index} />
+          ))
         ) : data ? (
           <Box className="grid gap-4 md:grid-cols-3">
-            {data.map((batch, index) => {
-              return (
-                <Link to={`${APP_PATHS.SYLLABUS}/${batch.batch}`} key={index}>
-                  <Card className="transition-colors hover:bg-gray-100">
-                    <CardContent className="p-4">
-                      <Box className="flex items-center w-full text-xl text-left">
-                        <span className="mr-4 text-2xl">{`Batch ${batch.batch}`}</span>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Link>
-              );
-            })}
+            {data.map((item, index) => (
+              <NavigationLinkCard
+                label={item.dept}
+                key={index}
+                path={`${
+                  APP_PATHS.SYLLABUS
+                }/${batch}/${item?.dept?.toLowerCase()}`}
+                isExternal={item?.url ? true : false}
+              />
+            ))}
           </Box>
         ) : (
           <Box>
