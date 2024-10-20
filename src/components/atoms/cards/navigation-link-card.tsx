@@ -19,7 +19,7 @@ export default function NavigationLinkCard({
 }) {
   return (
     <Link to={isExternal ? url : path} target={isExternal ? "_blank" : "_self"}>
-      <Card className="transition-colors hover:bg-gray-100">
+      <Card className="transition-colors hover:bg-gray-100 dark:hover:bg-zinc-800">
         <CardContent className="flex items-center justify-between p-4">
           <Box className="flex items-center w-full text-xl text-left">
             <span

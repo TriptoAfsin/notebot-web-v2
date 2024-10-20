@@ -1,5 +1,5 @@
+import NavigationLinkCard from "@/components/atoms/cards/navigation-link-card";
 import { Box } from "@/components/atoms/layout";
-import NavigationLinkCard from "@/components/atoms/skeletons/navigation-link-card";
 import RootContentSkeleton from "@/components/atoms/skeletons/root-content-skeleton";
 import { Text } from "@/components/atoms/typography/text";
 import { TextEffect } from "@/components/atoms/typography/text-effect";

@@ -5,10 +5,10 @@ import { Box } from "./box";
 
 export default function Footer() {
   return (
-    <footer className="text-gray-600 body-font">
-      <Box className="bg-gray-100">
+    <footer className="text-gray-600 body-font dark:text-white">
+      <Box className="bg-gray-100 dark:bg-gray-800">
         <Box className="container flex flex-col flex-wrap px-5 py-4 mx-auto sm:flex-row">
-          <Text className="text-sm text-center text-gray-500 sm:text-left">
+          <Text className="text-sm text-center text-gray-500 dark:text-white sm:text-left">
             © {new Date().getFullYear()} {APP_CONFIG.name}
           </Text>
           <Box

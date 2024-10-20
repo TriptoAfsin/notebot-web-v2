@@ -50,10 +50,10 @@ export default function NotesPage() {
         📗 Choose Level for Notes
       </TextEffect>
       <AnimatingContainer animation="slideDown">
-        <Box className="grid gap-4">
+        <Box className="grid grid-cols-1 gap-4 md:grid-cols-2 ">
           {levels.map((level, index) => (
             <Link to={level.href} key={index}>
-              <Card className="transition-colors hover:bg-gray-100">
+              <Card className="transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800">
                 <CardContent className="p-4">
                   <Box className="flex items-center w-full text-xl text-left">
                     <span className="mr-4 text-2xl">{level.name}</span>

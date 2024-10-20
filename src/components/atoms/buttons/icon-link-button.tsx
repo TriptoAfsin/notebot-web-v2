@@ -34,14 +34,21 @@ export default function IconLinkButton({
     <Link
       to={path}
       className={cn(
-        "flex flex-col items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors aspect-square",
+        "flex flex-col items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors aspect-square dark:bg-zinc-800 dark:hover:bg-zinc-700",
         sizeClasses[size],
         className
       )}
       target={isExternal ? "_blank" : "_self"}
     >
-      <Box className={cn("text-gray-600", iconClassName)}>{icon}</Box>
-      <span className={cn("mt-1 text-gray-800 text-nowrap", labelClassName)}>
+      <Box className={cn("text-gray-600 dark:text-gray-100", iconClassName)}>
+        {icon}
+      </Box>
+      <span
+        className={cn(
+          "mt-1 text-gray-800 dark:text-white text-nowrap",
+          labelClassName
+        )}
+      >
         {label}
       </span>
     </Link>

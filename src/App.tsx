@@ -29,47 +29,57 @@ const JokesPage = lazy(() => import("@/pages/jokes"));
 // Create a client
 const queryClient = new QueryClient();
 
+import { ThemeProvider } from "@/components/theme-provider";
+
 function App() {
   return (
-    <BrowserRouter>
-      <Header />
-      <Box className="min-h-[calc(100vh-150px)]">
-        <QueryClientProvider client={queryClient}>
-          <Suspense fallback={<Spinner className={`text-[#377fcc]`} />}>
-            <Routes>
-              <Route path="/" element={<FrontPage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/q-bank" element={<QBankPage />} />
-              <Route path="/syllabus" element={<SyllabusPage />} />
-              <Route path="/results" element={<ResultsPage />} />
-              <Route path="/jokes" element={<JokesPage />} />
-              <Route path="/notes" element={<NotesPage />} />
-              <Route path="/notes/:level" element={<NoteLevels />} />
-              <Route path="/notes/:level/:subName" element={<NoteSubjects />} />
-              <Route
-                path="/notes/:level/:subName/:topic"
-                element={<NoteTopics />}
-              />
+    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+      <BrowserRouter>
+        <Header />
+        <Box className="min-h-[calc(100vh-150px)]">
+          <QueryClientProvider client={queryClient}>
+            <Suspense fallback={<Spinner className={`text-[#377fcc]`} />}>
+              <Routes>
+                <Route path="/" element={<FrontPage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/q-bank" element={<QBankPage />} />
+                <Route path="/syllabus" element={<SyllabusPage />} />
+                <Route path="/results" element={<ResultsPage />} />
+                <Route path="/jokes" element={<JokesPage />} />
+                <Route path="/notes" element={<NotesPage />} />
+                <Route path="/notes/:level" element={<NoteLevels />} />
+                <Route
+                  path="/notes/:level/:subName"
+                  element={<NoteSubjects />}
+                />
+                <Route
+                  path="/notes/:level/:subName/:topic"
+                  element={<NoteTopics />}
+                />
 
-              <Route path="/lab-reports" element={<LabReportsPage />} />
-              <Route path="/lab-reports/:level" element={<LabLevels />} />
-              <Route
-                path="/lab-reports/:level/:subName"
-                element={<LabSubjects />}
-              />
-              <Route
-                path="/lab-reports/:level/:subName/:topic"
-                element={<LabTopics />}
-              />
+                <Route path="/lab-reports" element={<LabReportsPage />} />
+                <Route path="/lab-reports/:level" element={<LabLevels />} />
+                <Route
+                  path="/lab-reports/:level/:subName"
+                  element={<LabSubjects />}
+                />
+                <Route
+                  path="/lab-reports/:level/:subName/:topic"
+                  element={<LabTopics />}
+                />
 
-              <Route path="/syllabus/:batch" element={<SyllabusBatch />} />
-              <Route path="/syllabus/:batch/:dept" element={<SyllabusDept />} />
-            </Routes>
-          </Suspense>
-        </QueryClientProvider>
-      </Box>
-      <Footer />
-    </BrowserRouter>
+                <Route path="/syllabus/:batch" element={<SyllabusBatch />} />
+                <Route
+                  path="/syllabus/:batch/:dept"
+                  element={<SyllabusDept />}
+                />
+              </Routes>
+            </Suspense>
+          </QueryClientProvider>
+        </Box>
+        <Footer />
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 
