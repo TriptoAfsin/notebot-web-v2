@@ -7,7 +7,7 @@ export const APP_PATHS = {
   NOTES: "/notes",
   CONTACT: "/contact",
   LAB_REPORTS: "/lab-reports",
-  QBANKS: "/qbanks",
+  QBANKS: "/q-bank",
   NOTICES: "/notices",
   SYLLABUS: "/syllabus",
   RESULTS: "/results",
@@ -22,5 +22,5 @@ export const APP_PATHS = {
     `/lab-reports/${level}/${subject}`,
   LAB_REPORTS_DETAILS: (level: string, subject: string, topic: string) =>
     `/lab-reports/${level}/${subject}/${topic}`,
-  JOKE: "/joke",
+  JOKES: "/jokes",
 };

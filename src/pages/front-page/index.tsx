@@ -47,7 +47,7 @@ const FRONT_PAGE_ITEMS = [
     id: 6,
     title: "Jokes",
     icon: <img src={JOKES_ICON} alt="Jokes" />,
-    href: APP_PATHS.JOKE,
+    href: APP_PATHS.JOKES,
   },
 ];
 

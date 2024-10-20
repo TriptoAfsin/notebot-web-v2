@@ -3,6 +3,8 @@ import { HandHeart, House, MessageCircle, Phone } from "lucide-react";
 export const APP_CONFIG = {
   name: "NoteBot Web",
   logoIcon: "/notebot-web.png",
+  colorPrimary: "#377fcc",
+  colorSecondary: "#000000",
   founder: {
     name: "Afshin Nahian Tripto",
     github: "https://github.com/TriptoAfsin",
