@@ -22,7 +22,10 @@ export default function ErrorComponent({
 }: ErrorComponentProps) {
   return (
     <Box
-      className={cn("text-center flex flex-col items-center gap-2", className)}
+      className={cn(
+        "text-center flex flex-col items-center gap-2 my-8",
+        className
+      )}
     >
       <AlertCircle className={cn("w-12 h-12 text-red-500", iconClassName)} />
       <Text

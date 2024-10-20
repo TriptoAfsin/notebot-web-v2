@@ -15,21 +15,19 @@ import { Link } from "react-router-dom";
 const levels = [
   {
     name: "🧒 Level 1",
-
-    href: "https://drive.google.com/drive/folders/1Fu7l9FBq3gdWUKNnTix6RibLvy3e25Ra?usp=sharing",
+    href: `${APP_PATHS.NOTES}/1`,
   },
   {
     name: "👦 Level 2",
-
-    href: "https://drive.google.com/drive/folders/1KZvgEL3f1kDY54H5Ha218l7yZfPn6jM6?usp=sharing",
+    href: `${APP_PATHS.NOTES}/2`,
   },
   {
     name: "🧑 Level 3",
-    href: "https://drive.google.com/drive/folders/1mbygPQPSEDkP6NoRxJxJATWI8aBgzxsZ?usp=sharing",
+    href: `${APP_PATHS.NOTES}/3`,
   },
   {
     name: "🧑‍🎓 Level 4",
-    href: "https://drive.google.com/drive/folders/17QQ6mXUYe3FL7sf4VMzdBBkRbJAId0VT?usp=sharing",
+    href: `${APP_PATHS.NOTES}/4`,
   },
 ];
 
@@ -49,12 +47,12 @@ export default function NotesPage() {
         </BreadcrumbList>
       </Breadcrumb>
       <TextEffect className="flex items-center mb-6 text-xl font-bold">
-        📗 Choose Level forNotes
+        📗 Choose Level for Notes
       </TextEffect>
       <AnimatingContainer animation="slideDown">
         <Box className="grid gap-4">
           {levels.map((level, index) => (
-            <Link to={level.href} key={index} target="_blank">
+            <Link to={level.href} key={index}>
               <Card className="transition-colors hover:bg-gray-100">
                 <CardContent className="p-4">
                   <Box className="flex items-center w-full text-xl text-left">

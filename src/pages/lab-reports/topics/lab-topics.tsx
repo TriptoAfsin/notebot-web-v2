@@ -13,24 +13,24 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { APP_PATHS } from "@/constants/path-config";
-import { useGetNoteLevelDetails } from "@/hooks/networking/content/note-level-details";
+import { useGetLabReportSubjectTopicDetails } from "@/hooks/networking/content/lab-report-topic-details";
 import { useLocation } from "react-router-dom";
 
-export default function NoteLevels() {
+export default function LabTopics() {
   const location = useLocation();
-  // Extract batch from the URL path
-  const level = location.pathname.split("/").pop();
+  // Extract level and subject from the URL path
+  const pathParts = location.pathname.split("/");
+  const level = pathParts[pathParts.length - 3];
+  const subject = pathParts[pathParts.length - 2];
+  const topic = pathParts[pathParts.length - 1];
 
-  const { data, isLoading, error, refetch } = useGetNoteLevelDetails(
-    level as string
-  );
-
-  console.log("data", data);
+  const { data, isLoading, error, refetch } =
+    useGetLabReportSubjectTopicDetails(level, subject, topic);
 
   if (error) {
     return (
       <ErrorComponent
-        message="An error occurred while fetching notes."
+        message="An error occurred while fetching lab reports."
         refreshFunc={refetch}
       />
     );
@@ -46,16 +46,21 @@ export default function NoteLevels() {
           <BreadcrumbSeparator />
 
           <BreadcrumbItem>
-            <BreadcrumbLink href={APP_PATHS.NOTES}>Notes</BreadcrumbLink>
+            <BreadcrumbLink href={APP_PATHS.LAB_REPORTS}>
+              Lab Reports
+            </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink>{`Level ${level}`}</BreadcrumbLink>
+            <BreadcrumbLink
+              className="capitalize"
+              href={APP_PATHS.NOTES_SUBJECT_DETAILS(level, subject)}
+            >{`${subject?.toUpperCase()}`}</BreadcrumbLink>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <TextEffect className="flex items-center mb-6 text-xl font-bold">
-        📗 Choose Subject
+        📗 Choose Lab Report
       </TextEffect>
       <AnimatingContainer animation="slideDown">
         {isLoading ? (
@@ -64,16 +69,14 @@ export default function NoteLevels() {
           ))
         ) : data ? (
           <Box className="grid gap-4 md:grid-cols-3">
-            {data?.map((item, index) => {
-              // Extract the subject from the route
-              const subject = item?.route?.split("/").pop() || "";
-
+            {data.map((item, index) => {
               return (
                 <NavigationLinkCard
-                  label={item.subName}
-                  url={item?.url}
+                  label={item?.title}
                   key={index}
-                  path={`${APP_PATHS.NOTES}/${level}/${subject}`}
+                  url={item?.url}
+                  labelClassName="text-lg"
+                  path={`${APP_PATHS.LAB_REPORTS}/${level}/${subject}/${topic}`}
                   isExternal={item?.url ? true : false}
                 />
               );
@@ -81,7 +84,7 @@ export default function NoteLevels() {
           </Box>
         ) : (
           <Box>
-            <Text>No notes available.</Text>
+            <Text>No lab reports available.</Text>
           </Box>
         )}
       </AnimatingContainer>

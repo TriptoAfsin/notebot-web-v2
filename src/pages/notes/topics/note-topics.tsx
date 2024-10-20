@@ -13,19 +13,22 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { APP_PATHS } from "@/constants/path-config";
-import { useGetNoteLevelDetails } from "@/hooks/networking/content/note-level-details";
+import { useGetNoteSubjectTopicDetails } from "@/hooks/networking/content/note-topic-details";
 import { useLocation } from "react-router-dom";
 
-export default function NoteLevels() {
+export default function NoteTopics() {
   const location = useLocation();
-  // Extract batch from the URL path
-  const level = location.pathname.split("/").pop();
+  // Extract level and subject from the URL path
+  const pathParts = location.pathname.split("/");
+  const level = pathParts[pathParts.length - 3];
+  const subject = pathParts[pathParts.length - 2];
+  const topic = pathParts[pathParts.length - 1];
 
-  const { data, isLoading, error, refetch } = useGetNoteLevelDetails(
-    level as string
+  const { data, isLoading, error, refetch } = useGetNoteSubjectTopicDetails(
+    level,
+    subject,
+    topic
   );
-
-  console.log("data", data);
 
   if (error) {
     return (
@@ -50,12 +53,15 @@ export default function NoteLevels() {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink>{`Level ${level}`}</BreadcrumbLink>
+            <BreadcrumbLink
+              className="capitalize"
+              href={APP_PATHS.NOTES_SUBJECT_DETAILS(level, subject)}
+            >{`${subject?.toUpperCase()}`}</BreadcrumbLink>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <TextEffect className="flex items-center mb-6 text-xl font-bold">
-        📗 Choose Subject
+        📗 Choose Note
       </TextEffect>
       <AnimatingContainer animation="slideDown">
         {isLoading ? (
@@ -64,16 +70,14 @@ export default function NoteLevels() {
           ))
         ) : data ? (
           <Box className="grid gap-4 md:grid-cols-3">
-            {data?.map((item, index) => {
-              // Extract the subject from the route
-              const subject = item?.route?.split("/").pop() || "";
-
+            {data.map((item, index) => {
               return (
                 <NavigationLinkCard
-                  label={item.subName}
-                  url={item?.url}
+                  label={item?.title}
                   key={index}
-                  path={`${APP_PATHS.NOTES}/${level}/${subject}`}
+                  url={item?.url}
+                  labelClassName="text-lg"
+                  path={`${APP_PATHS.NOTES}/${level}/${subject}/${topic}`}
                   isExternal={item?.url ? true : false}
                 />
               );
