@@ -1,4 +1,11 @@
-import { HandHeart, House, MessageCircle, Phone } from "lucide-react";
+import {
+  HandHeart,
+  House,
+  MessageCircle,
+  Phone,
+  Smartphone,
+  Wrench,
+} from "lucide-react";
 
 export const APP_CONFIG = {
   name: "NoteBot Web",
@@ -24,7 +31,7 @@ export const APP_HEADER_MENU = [
   },
   {
     id: 12121,
-    icon: <MessageCircle size={20} strokeWidth={1.5} />,
+    icon: <Smartphone size={20} strokeWidth={1.5} />,
     label: "NoteBot App",
     href: APP_CONFIG.appLink,
     isExternal: true,
@@ -37,6 +44,13 @@ export const APP_HEADER_MENU = [
     isExternal: true,
   },
   {
+    id: 3,
+    icon: <HandHeart size={20} strokeWidth={1.5} />,
+    label: "Submit Notes",
+    href: APP_CONFIG.submitLink,
+    isExternal: true,
+  },
+  {
     id: 2,
     icon: <Phone size={20} strokeWidth={1.5} />,
     label: "BUTEX PhoneBook",
@@ -44,10 +58,10 @@ export const APP_HEADER_MENU = [
     isExternal: true,
   },
   {
-    id: 3,
-    icon: <HandHeart size={20} strokeWidth={1.5} />,
-    label: "Submit Notes",
-    href: APP_CONFIG.submitLink,
+    id: 2434,
+    icon: <Wrench size={20} strokeWidth={1.5} />,
+    label: "Count Converter",
+    href: "https://triptoafsin.github.io/CountKoto-/",
     isExternal: true,
   },
 ];

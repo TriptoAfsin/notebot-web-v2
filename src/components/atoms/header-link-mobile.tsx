@@ -8,7 +8,13 @@ import {
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
 
-function HeaderLinkMobile({ item }: { item: Record<string, any> }) {
+function HeaderLinkMobile({
+  item,
+  onSelect,
+}: {
+  item: Record<string, any>;
+  onSelect: () => void;
+}) {
   const location = useLocation();
   const fullPath = location.pathname + location.search;
 
@@ -46,6 +52,7 @@ function HeaderLinkMobile({ item }: { item: Record<string, any> }) {
     <Link
       key={item.label}
       to={item.href}
+      onClick={onSelect}
       className={cn(
         "py-2 hover:bg-accent flex items-center gap-2",
         fullPath === item.href ? "font-semibold" : ""

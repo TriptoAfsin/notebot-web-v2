@@ -33,6 +33,7 @@ const levels = [
   },
 ];
 
+const Q_BANK_ICON = "/icons/q-bank.png";
 export default function QBankPage() {
   return (
     <Box className="container p-6 mx-auto">
@@ -68,6 +69,9 @@ export default function QBankPage() {
           ))}
         </Box>
       </AnimatingContainer>
+      <Box className="absolute bottom-24 right-5">
+        <img src={Q_BANK_ICON} alt="Q Bank" className="w-24 h-24" />
+      </Box>
     </Box>
   );
 }

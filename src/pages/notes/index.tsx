@@ -31,6 +31,8 @@ const levels = [
   },
 ];
 
+const NOTES_ICON = "/icons/notes.png";
+
 export default function NotesPage() {
   return (
     <Box className="container p-6 mx-auto">
@@ -64,6 +66,9 @@ export default function NotesPage() {
           ))}
         </Box>
       </AnimatingContainer>
+      <Box className="absolute bottom-24 right-5">
+        <img src={NOTES_ICON} alt="Notes" className="w-24 h-24" />
+      </Box>
     </Box>
   );
 }

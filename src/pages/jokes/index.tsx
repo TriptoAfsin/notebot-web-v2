@@ -14,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import { APP_PATHS } from "@/constants/path-config";
 import { useGetJokes } from "@/hooks/networking/content/jokes";
 
+const JOKES_ICON = "/icons/joke.png";
+
 export default function JokesPage() {
   const { data, isLoading, error, refetch, isFetching } = useGetJokes();
 
@@ -53,6 +55,9 @@ export default function JokesPage() {
           <Button onClick={handleGenerateNewJoke}>Another Joke !</Button>
         </Box>
       )}
+      <Box className="absolute bottom-24 right-5">
+        <img src={JOKES_ICON} alt="Jokes" className="w-24 h-24" />
+      </Box>
     </Box>
   );
 }

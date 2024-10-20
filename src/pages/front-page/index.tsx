@@ -13,6 +13,8 @@ const Q_BANK_ICON = "/icons/q-bank.png";
 const RESULTS_ICON = "/icons/result.png";
 const JOKES_ICON = "/icons/joke.png";
 const SUBMIT_ICON = "/icons/submit.png";
+const PHONE_BOOK_ICON = "/icons/phonebook.png";
+const COUNT_CONVERTER_ICON = "/icons/converter.png";
 
 const FRONT_PAGE_ITEMS = [
   {
@@ -46,17 +48,31 @@ const FRONT_PAGE_ITEMS = [
     href: APP_PATHS.RESULTS,
   },
   {
-    id: 6,
-    title: "Jokes",
-    icon: <img src={JOKES_ICON} alt="Jokes" />,
-    href: APP_PATHS.JOKES,
-  },
-  {
     id: 7,
     title: "Submit Notes",
     icon: <img src={SUBMIT_ICON} alt="Submit" />,
     href: APP_CONFIG.submitLink,
     isExternal: true,
+  },
+  {
+    id: 2323,
+    title: "Phone Book",
+    icon: <img src={PHONE_BOOK_ICON} alt="Phone Book" />,
+    href: "https://triptoafsin.github.io/butex-phonebook-v2/",
+    isExternal: true,
+  },
+  {
+    id: 1221212,
+    title: "Count Koto",
+    icon: <img src={COUNT_CONVERTER_ICON} alt="Count Converter" />,
+    href: "https://triptoafsin.github.io/CountKoto-/",
+    isExternal: true,
+  },
+  {
+    id: 6,
+    title: "Jokes",
+    icon: <img src={JOKES_ICON} alt="Jokes" />,
+    href: APP_PATHS.JOKES,
   },
 ];
 

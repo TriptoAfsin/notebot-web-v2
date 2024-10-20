@@ -35,9 +35,9 @@ function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <BrowserRouter>
-        <Header />
-        <Box className="min-h-[calc(100vh-150px)]">
-          <QueryClientProvider client={queryClient}>
+        <QueryClientProvider client={queryClient}>
+          <Header />
+          <Box className="min-h-[calc(100vh-100px)]">
             <Suspense fallback={<Spinner className={`text-[#377fcc]`} />}>
               <Routes>
                 <Route path="/" element={<FrontPage />} />
@@ -75,9 +75,9 @@ function App() {
                 />
               </Routes>
             </Suspense>
-          </QueryClientProvider>
-        </Box>
-        <Footer />
+          </Box>
+          <Footer />
+        </QueryClientProvider>
       </BrowserRouter>
     </ThemeProvider>
   );

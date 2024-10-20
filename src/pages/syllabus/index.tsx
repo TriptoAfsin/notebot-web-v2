@@ -16,6 +16,8 @@ import { APP_PATHS } from "@/constants/path-config";
 import { useGetSyllabus } from "@/hooks/networking/content/syllabus";
 import { Link } from "react-router-dom";
 
+const SYLLABUS_ICON = "/icons/syllabus.png";
+
 export default function SyllabusPage() {
   const { data, isLoading, error, refetch } = useGetSyllabus();
 
@@ -27,8 +29,6 @@ export default function SyllabusPage() {
       />
     );
   }
-
-  console.log(data);
 
   return (
     <Box className="container p-6 mx-auto">
@@ -50,9 +50,9 @@ export default function SyllabusPage() {
       <AnimatingContainer animation="slideDown">
         {isLoading ? (
           <RootContentSkeleton />
-        ) : data ? (
+        ) : data && data?.length > 0 ? (
           <Box className="grid gap-4 md:grid-cols-3">
-            {data.map((batch, index) => {
+            {data?.map((batch, index) => {
               return (
                 <Link to={`${APP_PATHS.SYLLABUS}/${batch.batch}`} key={index}>
                   <Card className="transition-colors hover:bg-gray-100">
@@ -72,6 +72,9 @@ export default function SyllabusPage() {
           </Box>
         )}
       </AnimatingContainer>
+      <Box className="absolute bottom-24 right-5">
+        <img src={SYLLABUS_ICON} alt="Syllabus" className="w-24 h-24" />
+      </Box>
     </Box>
   );
 }
