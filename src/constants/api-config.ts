@@ -1,6 +1,5 @@
-const BASE_URL = import.meta.env.VITE_API_URL;
+export const BASE_URL = import.meta.env.VITE_API_URL;
 export const API_CONFIG = {
-  BASE_URL: BASE_URL,
   PLATFORM_STATUS: `${BASE_URL}`,
   NOTES_ROOT: `${BASE_URL}/app/notes`,
   NOTES_LEVEL: (level: number | string) => `${API_CONFIG.NOTES_ROOT}/${level}`,
