@@ -45,7 +45,7 @@ export default function SyllabusPage() {
         </BreadcrumbList>
       </Breadcrumb>
       <TextEffect className="flex items-center mb-6 text-xl font-bold">
-        📗 Choose Batch
+        📘 Choose Batch
       </TextEffect>
       <AnimatingContainer animation="slideDown">
         {isLoading ? (
@@ -55,7 +55,7 @@ export default function SyllabusPage() {
             {data?.map((batch, index) => {
               return (
                 <Link to={`${APP_PATHS.SYLLABUS}/${batch.batch}`} key={index}>
-                  <Card className="transition-colors hover:bg-gray-100">
+                  <Card className="transition-colors hover:bg-gray-100 dark:hover:bg-zinc-800">
                     <CardContent className="p-4">
                       <Box className="flex items-center w-full text-xl text-left">
                         <span className="mr-4 text-2xl">{`Batch ${batch.batch}`}</span>

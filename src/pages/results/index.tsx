@@ -50,7 +50,7 @@ export default function ResultsPage() {
         </BreadcrumbList>
       </Breadcrumb>
       <TextEffect className="flex items-center mb-6 text-xl font-bold">
-        📗 Latest Results
+        🎓 Latest Results
       </TextEffect>
       {error ? (
         <ErrorComponent

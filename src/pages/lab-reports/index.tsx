@@ -51,7 +51,7 @@ export default function LabReportsPage() {
         </BreadcrumbList>
       </Breadcrumb>
       <TextEffect className="flex items-center mb-6 text-xl font-bold">
-        📗 Choose Level for Lab Reports
+        📙 Choose Level for Lab Reports
       </TextEffect>
       <AnimatingContainer animation="slideDown">
         <Box className="grid gap-4 md:grid-cols-2">

@@ -79,7 +79,9 @@ const FRONT_PAGE_ITEMS = [
 function FrontPage() {
   return (
     <Box className="flex flex-col items-center min-h-screen p-4">
-      <BrandLogo className="w-24 h-24 mb-5" />
+      <AnimatingContainer animation="zoomIn" duration={0.8}>
+        <BrandLogo className="w-24 h-24 mb-5" />
+      </AnimatingContainer>
       <TextEffect className="text-xl font-semibold">NoteBot Web</TextEffect>
       <AnimatingContainer animation="slideDown">
         <Grid
@@ -93,7 +95,7 @@ function FrontPage() {
               label={item.title}
               icon={item?.icon}
               labelClassName="font-semibold"
-              iconClassName="w-16 h-16"
+              iconClassName="w-14 h-14"
               isExternal={item?.isExternal}
             />
           ))}

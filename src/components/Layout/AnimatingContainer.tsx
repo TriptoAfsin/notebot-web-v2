@@ -3,7 +3,16 @@ import { ReactNode } from "react";
 
 interface AnimatingContainerProps {
   children: ReactNode;
-  animation: "fade" | "slideDown" | "slideUp" | "slideLeft" | "slideRight";
+  animation:
+    | "fade"
+    | "slideDown"
+    | "slideUp"
+    | "slideLeft"
+    | "slideRight"
+    | "zoomIn"
+    | "scaleUp"
+    | "scaleDown"
+    | "zoomDown";
   duration?: number;
   className?: string;
 }
@@ -28,6 +37,22 @@ const animations = {
   slideRight: {
     initial: { opacity: 0, x: -20 },
     animate: { opacity: 1, x: 0 },
+  },
+  zoomIn: {
+    initial: { opacity: 0, scale: 0.8 },
+    animate: { opacity: 1, scale: 1 },
+  },
+  scaleUp: {
+    initial: { scale: 0.8 },
+    animate: { scale: 1 },
+  },
+  scaleDown: {
+    initial: { scale: 1.2 },
+    animate: { scale: 1 },
+  },
+  zoomDown: {
+    initial: { opacity: 0, scale: 1.2, y: -20 },
+    animate: { opacity: 1, scale: 1, y: 0 },
   },
 };
 
