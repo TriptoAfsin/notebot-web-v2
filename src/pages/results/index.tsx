@@ -67,7 +67,7 @@ export default function ResultsPage() {
                 ))
               : // Actual results
                 results?.map(result => (
-                  <Link to={result.href} key={result.href}>
+                  <Link to={result.href} key={result.href} target="_blank">
                     <Card>
                       <CardContent className="flex items-center justify-between p-4">
                         <p>{result.content}</p>
