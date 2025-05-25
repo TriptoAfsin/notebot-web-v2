@@ -31,6 +31,10 @@ const levels = [
     name: "🧑‍🎓 Level 4",
     href: "https://drive.google.com/drive/folders/17QQ6mXUYe3FL7sf4VMzdBBkRbJAId0VT?usp=sharing",
   },
+  {
+    name: "✅ QB Solves",
+    href: "https://drive.google.com/drive/folders/1hvldnZCyOX412pBbdElbRvh33o7uqg2R?usp=sharing",
+  },
 ];
 
 const Q_BANK_ICON = "/icons/q-bank.png";
