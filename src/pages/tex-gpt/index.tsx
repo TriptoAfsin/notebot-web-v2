@@ -29,7 +29,6 @@ type Message = {
   content: string;
   timestamp: Date;
   isError?: boolean;
-  originalQuery?: string;
   references?: Array<{
     filename: string;
     score: number;
@@ -47,18 +46,19 @@ export default function TexGptPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentQuery, setCurrentQuery] = useState("");
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [shouldSearch, setShouldSearch] = useState(false);
   const [expandedReferences, setExpandedReferences] = useState<Set<string>>(
     new Set()
   );
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const {
+    mutate: performSearch,
+    loading: isSearching,
     data: searchResult,
-    isLoading: isSearching,
     error,
-  } = useAutoRagSearch(searchQuery, shouldSearch && searchQuery.length > 0);
+    isSuccess,
+    reset,
+  } = useAutoRagSearch();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -69,7 +69,7 @@ export default function TexGptPage() {
   }, [messages]);
 
   useEffect(() => {
-    if (searchResult && shouldSearch) {
+    if (searchResult && isSuccess) {
       if (searchResult.success) {
         // Extract references from the data
         const references =
@@ -98,38 +98,37 @@ export default function TexGptPage() {
             "Sorry, I encountered an error while processing your request.",
           timestamp: new Date(),
           isError: true,
-          originalQuery: searchQuery,
         };
 
         setMessages(prev => [...prev, errorMessage]);
       }
 
       setIsWaitingForResponse(false);
-      setShouldSearch(false);
-      setSearchQuery("");
     }
-  }, [searchResult, shouldSearch, searchQuery]);
+  }, [searchResult, isSuccess]);
 
   useEffect(() => {
-    if (error && shouldSearch) {
+    if (error) {
       const errorMessage: Message = {
         id: Date.now().toString(),
         type: "assistant",
         content: "Sorry, I encountered an error while processing your request.",
         timestamp: new Date(),
         isError: true,
-        originalQuery: searchQuery,
       };
 
       setMessages(prev => [...prev, errorMessage]);
       setIsWaitingForResponse(false);
-      setShouldSearch(false);
-      setSearchQuery("");
     }
-  }, [error, shouldSearch, searchQuery]);
+  }, [error]);
 
   const handleSubmit = () => {
-    if (!currentQuery.trim() || isWaitingForResponse) return;
+    if (
+      !currentQuery.trim() ||
+      isWaitingForResponse ||
+      currentQuery.length > 300
+    )
+      return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -154,9 +153,8 @@ export default function TexGptPage() {
       }
     }
 
-    setSearchQuery(queryToSend);
-    setShouldSearch(true);
     setIsWaitingForResponse(true);
+    performSearch(queryToSend);
     setCurrentQuery("");
   };
 
@@ -168,14 +166,19 @@ export default function TexGptPage() {
     setMessages([]);
     setCurrentQuery("");
     setIsWaitingForResponse(false);
-    setShouldSearch(false);
-    setSearchQuery("");
+    reset();
   };
 
-  const handleRetry = (originalQuery: string) => {
-    setSearchQuery(originalQuery);
-    setShouldSearch(true);
-    setIsWaitingForResponse(true);
+  const handleRetry = () => {
+    // Find the last user message to retry
+    const lastUserMessage = [...messages]
+      .reverse()
+      .find(msg => msg.type === "user");
+
+    if (lastUserMessage) {
+      setIsWaitingForResponse(true);
+      performSearch(lastUserMessage.content);
+    }
   };
 
   const toggleReferences = (messageId: string) => {
@@ -216,12 +219,12 @@ export default function TexGptPage() {
       {/* Messages Area */}
       <div
         className={cn(
-          "absolute inset-0 bottom-[150px] overflow-hidden",
-          messages.length > 0 ? "top-[73px]" : "top-0"
+          "absolute inset-0 bottom-[150px] ",
+          messages?.length > 0 ? "top-[73px]" : "top-0"
         )}
       >
         <div className="h-full px-6 py-4 pb-6 overflow-y-auto">
-          {messages.length === 0 ? (
+          {messages?.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full space-y-8">
               <AnimatingContainer animation="zoomIn" duration={0.8}>
                 <img
@@ -264,7 +267,7 @@ export default function TexGptPage() {
             </div>
           ) : (
             <div className="max-w-4xl mx-auto space-y-6">
-              {messages.map(message => (
+              {messages?.map(message => (
                 <div
                   key={message.id}
                   className={cn(
@@ -273,7 +276,7 @@ export default function TexGptPage() {
                   )}
                 >
                   {message.type === "assistant" && (
-                    <div className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0 bg-primary">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0 ">
                       <img
                         src="/icons/tex-gpt.png"
                         alt="TexGPT"
@@ -297,20 +300,16 @@ export default function TexGptPage() {
                             <p className="text-sm text-red-600 dark:text-red-400">
                               {message.content}
                             </p>
-                            {message.originalQuery && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  handleRetry(message.originalQuery!)
-                                }
-                                className="gap-2"
-                                disabled={isWaitingForResponse}
-                              >
-                                <RefreshCw className="w-4 h-4" />
-                                Retry
-                              </Button>
-                            )}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleRetry}
+                              className="gap-2"
+                              disabled={isWaitingForResponse}
+                            >
+                              <RefreshCw className="w-4 h-4" />
+                              Retry
+                            </Button>
                           </div>
                         ) : (
                           <Markdown className="prose-sm prose max-w-none dark:prose-invert">
@@ -432,8 +431,8 @@ export default function TexGptPage() {
       </div>
 
       {/* Input Area */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-border bg-card/50 backdrop-blur-sm">
-        <div className="max-w-4xl mx-auto">
+      <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-border bg-card/50">
+        <div className="max-w-4xl mx-auto space-y-2">
           <PromptInput
             value={currentQuery}
             onValueChange={setCurrentQuery}
@@ -451,7 +450,11 @@ export default function TexGptPage() {
                 <Button
                   size="sm"
                   onClick={handleSubmit}
-                  disabled={!currentQuery.trim() || isWaitingForResponse}
+                  disabled={
+                    !currentQuery.trim() ||
+                    isWaitingForResponse ||
+                    currentQuery.length > 300
+                  }
                   className="rounded-full"
                 >
                   <Send className="w-4 h-4" />
@@ -459,6 +462,20 @@ export default function TexGptPage() {
               </PromptInputAction>
             </PromptInputActions>
           </PromptInput>
+
+          {/* Character Counter */}
+          <div className="flex justify-end">
+            <span
+              className={cn(
+                "text-xs",
+                currentQuery.length > 300
+                  ? "text-red-500"
+                  : "text-muted-foreground"
+              )}
+            >
+              {currentQuery.length}/300
+            </span>
+          </div>
         </div>
       </div>
     </div>

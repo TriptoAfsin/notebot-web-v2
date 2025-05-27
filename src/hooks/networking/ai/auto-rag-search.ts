@@ -1,5 +1,5 @@
 import { API_CONFIG } from "@/constants/api-config";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 
 type AutoRagSearchResponse = {
@@ -33,7 +33,7 @@ const fetchAutoRagSearch = async (
 ): Promise<AutoRagSearchResponse | null> => {
   try {
     const response = await axios.post(API_CONFIG.AUTO_RAG_SEARCH, {
-      query: `You're an expert in textile industry. Answer the following question: '${query}', if you don't know the answer, just say "Sorry I don't know the answer to that question, I can help you with questions related to textile industry"`,
+      query: `You're an expert in textile industry. Answer the following question: '${query}', if you don't know the answer, just say "Sorry I don't know the answer to your question, I can only help you with questions related to textile industry"`,
     });
     return response?.data ?? null;
   } catch (error) {
@@ -44,10 +44,19 @@ const fetchAutoRagSearch = async (
   }
 };
 
-export const useAutoRagSearch = (query: string, enabled: boolean = true) => {
-  return useQuery<AutoRagSearchResponse | null, Error>({
-    queryKey: ["autoRagSearch", query],
-    queryFn: () => fetchAutoRagSearch(query),
-    enabled: enabled && !!query, // Only run if enabled and query is not empty
+export const useAutoRagSearch = () => {
+  const mutation = useMutation<AutoRagSearchResponse | null, Error, string>({
+    mutationFn: (query: string) => fetchAutoRagSearch(query),
   });
+
+  return {
+    mutate: mutation.mutate,
+    mutateAsync: mutation.mutateAsync,
+    loading: mutation.isPending,
+    data: mutation.data,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess,
+    isError: mutation.isError,
+    reset: mutation.reset,
+  };
 };
