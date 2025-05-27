@@ -203,7 +203,7 @@ export default function TexGptPage() {
       {/* Messages Area */}
       <div
         className={cn(
-          "absolute inset-0 bottom-[120px] overflow-hidden",
+          "absolute inset-0 bottom-[150px] overflow-hidden",
           messages.length > 0 ? "top-[73px]" : "top-0"
         )}
       >
@@ -224,8 +224,9 @@ export default function TexGptPage() {
                 </TextEffect>
                 <AnimatingContainer animation="slideDown" duration={0.8}>
                   <p className="max-w-md text-muted-foreground">
-                    Ask me anything! I'm powered by advanced RAG technology to
-                    provide accurate and contextual responses.
+                    Ask me anything relevant to textile industry! I'm powered by
+                    advanced RAG technology to provide accurate and contextual
+                    responses.
                   </p>
                 </AnimatingContainer>
               </div>
