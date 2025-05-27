@@ -23,4 +23,5 @@ export const APP_PATHS = {
   LAB_REPORTS_DETAILS: (level: string, subject: string, topic: string) =>
     `/lab-reports/${level}/${subject}/${topic}`,
   JOKES: "/jokes",
+  TEX_GPT: "/tex-gpt",
 };

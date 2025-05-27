@@ -25,6 +25,7 @@ import NoteTopics from "./pages/notes/topics/note-topics";
 const QBankPage = lazy(() => import("@/pages/q-bank"));
 const SyllabusPage = lazy(() => import("@/pages/syllabus"));
 const JokesPage = lazy(() => import("@/pages/jokes"));
+const TexGptPage = lazy(() => import("@/pages/tex-gpt"));
 
 // Create a client
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ function App() {
                 <Route path="/jokes" element={<JokesPage />} />
                 <Route path="/notes" element={<NotesPage />} />
                 <Route path="/notes/:level" element={<NoteLevels />} />
+
                 <Route
                   path="/notes/:level/:subName"
                   element={<NoteSubjects />}
@@ -73,6 +75,7 @@ function App() {
                   path="/syllabus/:batch/:dept"
                   element={<SyllabusDept />}
                 />
+                <Route path="/tex-gpt" element={<TexGptPage />} />
               </Routes>
             </Suspense>
           </Box>
