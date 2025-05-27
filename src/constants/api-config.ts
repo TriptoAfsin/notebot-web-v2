@@ -27,4 +27,5 @@ export const API_CONFIG = {
     `${API_CONFIG.SYLLABUS_BATCH(batch)}/${dept}`,
   RESULTS: `${BASE_URL}/results`,
   JOKES: `${BASE_URL}/app/jokes`,
+  AUTO_RAG_SEARCH: `${BASE_URL}/app/tex-gpt`,
 };

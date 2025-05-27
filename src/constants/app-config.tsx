@@ -1,4 +1,5 @@
 import {
+  BrainIcon,
   HandHeart,
   House,
   MessageCircle,
@@ -28,6 +29,12 @@ export const APP_HEADER_MENU = [
     icon: <House size={20} strokeWidth={1.5} />,
     label: "Home",
     href: "/",
+  },
+  {
+    id: 1,
+    icon: <BrainIcon size={20} strokeWidth={1.5} />,
+    label: "TexGPT",
+    href: "/tex-gpt",
   },
   {
     id: 12121,

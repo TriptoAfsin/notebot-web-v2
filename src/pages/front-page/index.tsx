@@ -12,6 +12,7 @@ const SYLLABUS_ICON = "/icons/syllabus.png";
 const Q_BANK_ICON = "/icons/q-bank.png";
 const RESULTS_ICON = "/icons/result.png";
 const JOKES_ICON = "/icons/joke.png";
+const TEX_GPT_ICON = "/icons/tex-gpt.png";
 const SUBMIT_ICON = "/icons/submit.png";
 const PHONE_BOOK_ICON = "/icons/phonebook.png";
 const COUNT_CONVERTER_ICON = "/icons/converter.png";
@@ -73,6 +74,12 @@ const FRONT_PAGE_ITEMS = [
     title: "Jokes",
     icon: <img src={JOKES_ICON} alt="Jokes" />,
     href: APP_PATHS.JOKES,
+  },
+  {
+    id: 7,
+    title: "Tex-GPT",
+    icon: <img src={TEX_GPT_ICON} alt="Tex-GPT" />,
+    href: APP_PATHS.TEX_GPT,
   },
 ];
 
