@@ -60,8 +60,6 @@ export default function TexGptPage() {
     error,
   } = useAutoRagSearch(searchQuery, shouldSearch && searchQuery.length > 0);
 
-  console.log(`searchResult`, searchResult);
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -141,7 +139,22 @@ export default function TexGptPage() {
     };
 
     setMessages(prev => [...prev, userMessage]);
-    setSearchQuery(currentQuery.trim());
+
+    // If there's already a conversation, include the last user message in the query
+    let queryToSend = currentQuery.trim();
+    if (messages.length > 0) {
+      // Find the last user message
+      const lastUserMessage = [...messages]
+        .reverse()
+        .find(msg => msg.type === "user");
+      if (lastUserMessage) {
+        queryToSend = `Current query: ${currentQuery.trim()}\n\nPrevious question: ${
+          lastUserMessage.content
+        }`;
+      }
+    }
+
+    setSearchQuery(queryToSend);
     setShouldSearch(true);
     setIsWaitingForResponse(true);
     setCurrentQuery("");
