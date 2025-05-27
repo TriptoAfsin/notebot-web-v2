@@ -401,7 +401,7 @@ export default function TexGptPage() {
                         className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary shrink-0"
                         title="You"
                       >
-                        <User2Icon className="w-6 h-6 text-black" />
+                        <User2Icon className="w-6 h-6 text-primary-foreground" />
                       </Box>
                     </Box>
                   )}
@@ -412,7 +412,7 @@ export default function TexGptPage() {
               {isWaitingForResponse && (
                 <Box className="flex justify-start gap-4">
                   <Box
-                    className="flex items-center justify-center w-8 h-8 bg-[#1a1a1a] rounded-lg shrink-0"
+                    className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary shrink-0"
                     title="TexGPT"
                   >
                     <img
