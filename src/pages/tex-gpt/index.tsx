@@ -1,3 +1,4 @@
+import { Box } from "@/components/atoms/layout";
 import { TextEffect } from "@/components/atoms/typography/text-effect";
 import AnimatingContainer from "@/components/Layout/AnimatingContainer";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,7 @@ export default function TexGptPage() {
     new Set()
   );
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const {
     mutate: performSearch,
@@ -61,12 +63,22 @@ export default function TexGptPage() {
   } = useAutoRagSearch();
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesEndRef.current && messagesContainerRef.current) {
+      messagesEndRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
+    }
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    // Small delay to ensure DOM is updated before scrolling
+    const timeoutId = setTimeout(() => {
+      scrollToBottom();
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [messages, isWaitingForResponse]);
 
   useEffect(() => {
     if (searchResult && isSuccess) {
@@ -198,10 +210,10 @@ export default function TexGptPage() {
   };
 
   return (
-    <div className="relative h-[calc(100vh-100px)] bg-background">
+    <Box className="flex flex-col h-[calc(100vh-100px)] bg-background">
       {/* Header */}
       {messages.length > 0 && (
-        <div className="px-6 py-4 border-b border-border bg-card/50">
+        <div className="flex-shrink-0 px-6 py-4 border-b border-border bg-card/50">
           <div className="flex items-center justify-between">
             <Button
               variant="outline"
@@ -217,15 +229,13 @@ export default function TexGptPage() {
       )}
 
       {/* Messages Area */}
-      <div
-        className={cn(
-          "absolute inset-0 bottom-[150px] ",
-          messages?.length > 0 ? "top-[73px]" : "top-0"
-        )}
-      >
-        <div className="h-full px-6 py-4 pb-6 overflow-y-auto">
+      <Box className="flex-1 min-h-0">
+        <Box
+          ref={messagesContainerRef}
+          className="h-full px-6 py-4 pb-6 overflow-y-auto"
+        >
           {messages?.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full space-y-8">
+            <Box className="flex flex-col items-center justify-center h-full space-y-8">
               <AnimatingContainer animation="zoomIn" duration={0.8}>
                 <img
                   src="/icons/tex-gpt.png"
@@ -234,7 +244,7 @@ export default function TexGptPage() {
                 />
               </AnimatingContainer>
 
-              <div className="text-center">
+              <Box className="text-center">
                 <TextEffect className="text-xl font-semibold">
                   Welcome to TexGPT
                 </TextEffect>
@@ -245,14 +255,14 @@ export default function TexGptPage() {
                     responses.
                   </p>
                 </AnimatingContainer>
-              </div>
+              </Box>
 
               {/* Suggested Prompts */}
-              <div className="w-full max-w-2xl space-y-3">
+              <Box className="w-full max-w-2xl space-y-3">
                 <h3 className="text-sm font-medium text-center text-muted-foreground">
                   Try asking about:
                 </h3>
-                <div className="grid gap-2 sm:grid-cols-2">
+                <Box className="grid gap-2 sm:grid-cols-2">
                   {SUGGESTED_PROMPTS.map((prompt, index) => (
                     <PromptSuggestion
                       key={index}
@@ -262,13 +272,13 @@ export default function TexGptPage() {
                       {prompt}
                     </PromptSuggestion>
                   ))}
-                </div>
-              </div>
-            </div>
+                </Box>
+              </Box>
+            </Box>
           ) : (
-            <div className="max-w-4xl mx-auto space-y-6">
+            <Box className="max-w-4xl mx-auto space-y-6">
               {messages?.map(message => (
-                <div
+                <Box
                   key={message.id}
                   className={cn(
                     "flex gap-4",
@@ -285,19 +295,19 @@ export default function TexGptPage() {
                     </div>
                   )}
 
-                  <div
+                  <Box
                     className={cn(
-                      "max-w-[80%] rounded-2xl px-4 py-3",
+                      "max-w-[80%] rounded-2xl px-4 py-3 break-words overflow-hidden",
                       message.type === "user"
                         ? "bg-primary text-primary-foreground"
                         : "bg-muted"
                     )}
                   >
-                    <div className="space-y-2">
+                    <Box className="space-y-2">
                       {message.type === "assistant" ? (
                         message.isError ? (
-                          <div className="space-y-3">
-                            <p className="text-sm text-red-600 dark:text-red-400">
+                          <Box className="space-y-3">
+                            <p className="text-sm text-red-600 break-words dark:text-red-400">
                               {message.content}
                             </p>
                             <Button
@@ -310,17 +320,17 @@ export default function TexGptPage() {
                               <RefreshCw className="w-4 h-4" />
                               Retry
                             </Button>
-                          </div>
+                          </Box>
                         ) : (
-                          <Markdown className="prose-sm prose max-w-none dark:prose-invert">
+                          <Markdown className="prose-sm prose max-w-none break-words dark:prose-invert [&_*]:break-words [&_code]:break-all [&_pre]:overflow-x-auto [&_pre]:whitespace-pre-wrap">
                             {message.content}
                           </Markdown>
                         )
                       ) : (
-                        <p className="text-sm">{message.content}</p>
+                        <p className="text-sm break-words">{message.content}</p>
                       )}
 
-                      <div className="flex items-center justify-between">
+                      <Box className="flex items-center justify-between">
                         <span className="text-xs opacity-70">
                           {formatTimestamp(message.timestamp)}
                         </span>
@@ -344,64 +354,64 @@ export default function TexGptPage() {
                             )}
                           </Button>
                         )}
-                      </div>
-                    </div>
+                      </Box>
+                    </Box>
 
                     {/* References */}
                     {message.type === "assistant" &&
                       !message.isError &&
                       expandedReferences.has(message.id) && (
-                        <div className="pt-3 mt-3 space-y-2 border-t border-border/50">
+                        <Box className="pt-3 mt-3 space-y-2 border-t border-border/50">
                           <p className="text-xs font-medium opacity-70">
                             References:
                           </p>
                           {message.references &&
                           message.references.length > 0 ? (
-                            <div className="space-y-1">
+                            <Box className="space-y-1">
                               {message.references
                                 .slice(0, 10)
                                 .map((reference, index) => (
-                                  <div
+                                  <Box
                                     key={index}
                                     className="p-2 text-xs rounded-lg bg-background/50"
                                   >
-                                    <div className="flex items-center justify-between">
-                                      <p className="font-medium truncate opacity-90">
+                                    <Box className="flex items-center justify-between">
+                                      <p className="font-medium break-words truncate opacity-90">
                                         {reference.filename}
                                       </p>
                                       <span className="ml-2 text-xs opacity-60 shrink-0">
                                         {(reference.score * 100).toFixed(1)}%
                                       </span>
-                                    </div>
-                                  </div>
+                                    </Box>
+                                  </Box>
                                 ))}
-                            </div>
+                            </Box>
                           ) : (
                             <p className="text-xs opacity-60">
                               No references found for this response.
                             </p>
                           )}
-                        </div>
+                        </Box>
                       )}
-                  </div>
+                  </Box>
 
                   {message.type === "user" && (
-                    <div className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0 bg-muted">
-                      <div
+                    <Box className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0 bg-muted">
+                      <Box
                         className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary shrink-0"
                         title="You"
                       >
                         <User2Icon className="w-6 h-6 text-black" />
-                      </div>
-                    </div>
+                      </Box>
+                    </Box>
                   )}
-                </div>
+                </Box>
               ))}
 
               {/* Loading State */}
               {isWaitingForResponse && (
-                <div className="flex justify-start gap-4">
-                  <div
+                <Box className="flex justify-start gap-4">
+                  <Box
                     className="flex items-center justify-center w-8 h-8 bg-[#1a1a1a] rounded-lg shrink-0"
                     title="TexGPT"
                   >
@@ -410,29 +420,29 @@ export default function TexGptPage() {
                       alt="TexGPT"
                       className="w-6 h-6"
                     />
-                  </div>
-                  <div className="max-w-[80%] rounded-2xl bg-muted px-4 py-3">
-                    <div className="flex items-center gap-3">
+                  </Box>
+                  <Box className="max-w-[80%] rounded-2xl bg-muted px-4 py-3">
+                    <Box className="flex items-center gap-3">
                       <Loader variant="typing" size="sm" />
                       <span className="text-sm text-muted-foreground">
                         {isSearching
                           ? "Searching knowledge base..."
                           : "Thinking..."}
                       </span>
-                    </div>
-                  </div>
-                </div>
+                    </Box>
+                  </Box>
+                </Box>
               )}
 
-              <div ref={messagesEndRef} />
-            </div>
+              <Box ref={messagesEndRef} />
+            </Box>
           )}
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* Input Area */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-border bg-card/50">
-        <div className="max-w-4xl mx-auto space-y-2">
+      <Box className="flex-shrink-0 p-6 border-t border-border bg-card/50">
+        <Box className="max-w-4xl mx-auto space-y-2">
           <PromptInput
             value={currentQuery}
             onValueChange={setCurrentQuery}
@@ -464,7 +474,7 @@ export default function TexGptPage() {
           </PromptInput>
 
           {/* Character Counter */}
-          <div className="flex justify-end">
+          <Box className="flex justify-end">
             <span
               className={cn(
                 "text-xs",
@@ -475,9 +485,9 @@ export default function TexGptPage() {
             >
               {currentQuery.length}/300
             </span>
-          </div>
-        </div>
-      </div>
-    </div>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 }
