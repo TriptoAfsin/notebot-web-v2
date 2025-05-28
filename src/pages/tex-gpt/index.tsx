@@ -11,9 +11,17 @@ import {
   PromptInputTextarea,
 } from "@/components/ui/prompt-input";
 import { PromptSuggestion } from "@/components/ui/prompt-suggestion";
+import { APP_CONFIG } from "@/constants/app-config";
 import { useAutoRagSearch } from "@/hooks/networking/ai/auto-rag-search";
 import { cn } from "@/lib/utils";
 import {
+  checkAndUpdateMessageLimit,
+  getCookie,
+  MESSAGE_LIMIT_KEY,
+  setCookie,
+} from "@/utils/cookie-utils";
+import {
+  AlertCircle,
   ChevronDown,
   ChevronUp,
   FileText,
@@ -49,6 +57,9 @@ export default function TexGptPage() {
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const [expandedReferences, setExpandedReferences] = useState<Set<string>>(
     new Set()
+  );
+  const [remainingMessages, setRemainingMessages] = useState<number>(
+    APP_CONFIG.limit.texGpt
   );
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -134,13 +145,43 @@ export default function TexGptPage() {
     }
   }, [error]);
 
+  //count
+  useEffect(() => {
+    const currentUserMessageCountFromCookie = getCookie(MESSAGE_LIMIT_KEY);
+    const today = new Date().toISOString().split("T")[0];
+    if (currentUserMessageCountFromCookie.date === today) {
+      setRemainingMessages(
+        APP_CONFIG.limit.texGpt -
+          Number(currentUserMessageCountFromCookie.count)
+      );
+    } else {
+      // console.log(`Today: ${today}, resetting cookie`);
+      setCookie(MESSAGE_LIMIT_KEY, {
+        count: 0,
+        date: today,
+      });
+      setRemainingMessages(APP_CONFIG.limit.texGpt);
+    }
+    // setRemainingMessages(currentUserMessageCountFromCookie);
+  }, []);
+
   const handleSubmit = () => {
     if (
       !currentQuery.trim() ||
       isWaitingForResponse ||
-      currentQuery.length > 300
+      currentQuery.length > 300 ||
+      remainingMessages <= 0
     )
       return;
+
+    // Check message limit
+    const { canSendMessage: canSend, remainingMessages: remaining } =
+      checkAndUpdateMessageLimit();
+    setRemainingMessages(remaining);
+
+    if (!canSend) {
+      return;
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -443,6 +484,24 @@ export default function TexGptPage() {
       {/* Input Area */}
       <Box className="flex-shrink-0 p-6 border-t border-border bg-card/50">
         <Box className="max-w-4xl mx-auto space-y-2">
+          {remainingMessages <= 0 ? (
+            <Box className="flex items-center gap-2 p-3 mb-2 text-sm text-yellow-600 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 dark:text-yellow-400">
+              <AlertCircle className="w-4 h-4" />
+              <span>
+                You've reached your daily message limit. Please try again
+                tomorrow.
+              </span>
+            </Box>
+          ) : remainingMessages <= 5 ? (
+            <Box className="flex items-center gap-2 p-3 mb-2 text-sm text-yellow-600 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 dark:text-yellow-400">
+              <AlertCircle className="w-4 h-4" />
+              <span>
+                You have {remainingMessages} message
+                {remainingMessages !== 1 ? "s" : ""} remaining today.
+              </span>
+            </Box>
+          ) : null}
+
           <PromptInput
             value={currentQuery}
             onValueChange={setCurrentQuery}
@@ -451,9 +510,13 @@ export default function TexGptPage() {
             className="shadow-lg"
           >
             <PromptInputTextarea
-              placeholder="Ask me anything..."
+              placeholder={
+                remainingMessages > 0
+                  ? "Ask me anything..."
+                  : "Daily message limit reached"
+              }
               className="text-base"
-              disabled={isWaitingForResponse}
+              disabled={isWaitingForResponse || remainingMessages <= 0}
             />
             <PromptInputActions>
               <PromptInputAction tooltip="Send message">
@@ -463,7 +526,8 @@ export default function TexGptPage() {
                   disabled={
                     !currentQuery.trim() ||
                     isWaitingForResponse ||
-                    currentQuery.length > 300
+                    currentQuery.length > 300 ||
+                    remainingMessages <= 0
                   }
                   className="rounded-full"
                 >
@@ -473,8 +537,14 @@ export default function TexGptPage() {
             </PromptInputActions>
           </PromptInput>
 
-          {/* Character Counter */}
-          <Box className="flex justify-end">
+          {/* Character Counter and Messages Remaining */}
+          <Box className="flex justify-between">
+            <span className="text-xs text-muted-foreground">
+              {remainingMessages > 0 &&
+                `${remainingMessages} message${
+                  remainingMessages !== 1 ? "s" : ""
+                } remaining today`}
+            </span>
             <span
               className={cn(
                 "text-xs",

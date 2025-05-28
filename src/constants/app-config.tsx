@@ -21,6 +21,9 @@ export const APP_CONFIG = {
     github: "https://github.com/TriptoAfsin",
     web: "https://www.triptex.me/",
   },
+  limit: {
+    texGpt: 10,
+  },
 };
 
 export const APP_HEADER_MENU = [
