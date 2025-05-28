@@ -31,7 +31,7 @@ export const checkAndUpdateMessageLimit = (): {
   const currentLimit = getCookie(MESSAGE_LIMIT_KEY) as DailyMessageLimit | null;
 
   // If no limit exists or it's a new day, reset the counter
-  if (!currentLimit || currentLimit.date !== today) {
+  if (!currentLimit || currentLimit?.date !== today) {
     const newLimit: DailyMessageLimit = {
       count: 1, // Count this message
       date: today,

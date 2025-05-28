@@ -149,10 +149,10 @@ export default function TexGptPage() {
   useEffect(() => {
     const currentUserMessageCountFromCookie = getCookie(MESSAGE_LIMIT_KEY);
     const today = new Date().toISOString().split("T")[0];
-    if (currentUserMessageCountFromCookie.date === today) {
+    if (currentUserMessageCountFromCookie?.date === today) {
       setRemainingMessages(
         APP_CONFIG.limit.texGpt -
-          Number(currentUserMessageCountFromCookie.count)
+          Number(currentUserMessageCountFromCookie?.count || 0)
       );
     } else {
       // console.log(`Today: ${today}, resetting cookie`);
