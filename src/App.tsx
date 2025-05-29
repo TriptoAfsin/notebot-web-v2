@@ -2,6 +2,8 @@ import { Box } from "@/components/atoms/layout";
 import Footer from "@/components/atoms/layout/footer";
 import Header from "@/components/atoms/layout/header";
 import { Spinner } from "@/components/atoms/spinner/spinner";
+import { DevCacheManager } from "@/components/dev-cache-manager";
+import { PWAUpdatePrompt, usePWAUpdate } from "@/components/pwa-update-prompt";
 import AboutPage from "@/pages/about";
 import FrontPage from "@/pages/front-page";
 import ResultsPage from "@/pages/results";
@@ -33,6 +35,8 @@ const queryClient = new QueryClient();
 import { ThemeProvider } from "@/components/theme-provider";
 
 function App() {
+  const { needRefresh, handleUpdate, handleDismiss } = usePWAUpdate();
+
   return (
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <BrowserRouter>
@@ -80,6 +84,17 @@ function App() {
             </Suspense>
           </Box>
           <Footer />
+
+          {/* PWA Update Prompt */}
+          {needRefresh && (
+            <PWAUpdatePrompt
+              onUpdate={handleUpdate}
+              onDismiss={handleDismiss}
+            />
+          )}
+
+          {/* Development Cache Manager */}
+          <DevCacheManager />
         </QueryClientProvider>
       </BrowserRouter>
     </ThemeProvider>
