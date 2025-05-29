@@ -11,9 +11,12 @@ import {
   PromptInputTextarea,
 } from "@/components/ui/prompt-input";
 import { PromptSuggestion } from "@/components/ui/prompt-suggestion";
+import { ToastContainer } from "@/components/ui/toast";
 import { APP_CONFIG } from "@/constants/app-config";
 import { useAutoRagSearch } from "@/hooks/networking/ai/auto-rag-search";
+import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { validateContent } from "@/utils/content-filter";
 import {
   checkAndUpdateMessageLimit,
   getCookie,
@@ -69,6 +72,8 @@ export default function TexGptPage() {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  const { toasts, showToast, removeToast } = useToast();
 
   const {
     mutate: performSearch,
@@ -179,6 +184,17 @@ export default function TexGptPage() {
       remainingMessages <= 0
     )
       return;
+
+    // Validate content before proceeding
+    const contentValidation = validateContent(currentQuery.trim());
+    if (!contentValidation.isValid) {
+      showToast(
+        "error",
+        contentValidation.reason || "Invalid content detected",
+        "Content Blocked"
+      );
+      return;
+    }
 
     // Check message limit
     const { canSendMessage: canSend, remainingMessages: remaining } =
@@ -621,6 +637,9 @@ export default function TexGptPage() {
           </Box>
         </Box>
       </Box>
+
+      {/* Toast Container */}
+      <ToastContainer toasts={toasts} onClose={removeToast} />
     </Box>
   );
 }
