@@ -10,7 +10,6 @@ const CURSE_WORDS = [
   "bastard",
   "crap",
   "piss",
-  "hell",
   "whore",
   "slut",
   "retard",
@@ -26,7 +25,7 @@ const CURSE_WORDS = [
   "nude",
   "naked",
   "kill",
-  "die",
+  "hell",
   "suicide",
   "murder",
   "rape",
@@ -90,6 +89,17 @@ const ILLEGAL_CHARACTERS = [
   "\u007F",
 ];
 
+/**
+ * Checks if a text contains a whole word (not as part of another word)
+ */
+function includesWholeWord(text: string, word: string): boolean {
+  const regex = new RegExp(
+    `\\b${word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`,
+    "i"
+  );
+  return regex.test(text);
+}
+
 export interface ContentFilterResult {
   isValid: boolean;
   reason?: string;
@@ -117,17 +127,10 @@ export function containsIllegalCharacters(text: string): boolean {
  * Detects if text contains curse words or inappropriate content
  */
 export function containsCurseWords(text: string): boolean {
-  const normalizedText = text.toLowerCase().replace(/[^a-z0-9\s]/g, "");
-  const words = normalizedText.split(/\s+/);
+  const normalizedText = text.toLowerCase().replace(/[^a-z0-9\s]/g, " ");
 
   return CURSE_WORDS.some(curseWord => {
-    // Check for exact word matches
-    if (words.includes(curseWord)) return true;
-
-    // Check for curse words within other words (like "fucking" contains "fuck")
-    return words.some(
-      word => word.includes(curseWord) && word.length > curseWord.length
-    );
+    return includesWholeWord(normalizedText, curseWord);
   });
 }
 

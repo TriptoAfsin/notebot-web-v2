@@ -74,3 +74,48 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Markdown Table Styling */
+@layer components {
+  .prose table,
+  .markdown table {
+    @apply w-full my-4 text-sm border border-collapse rounded-lg border-border;
+    overflow: hidden;
+  }
+
+  .prose thead,
+  .markdown thead {
+    @apply bg-muted/50;
+  }
+
+  .prose th,
+  .markdown th {
+    @apply px-3 py-2 font-semibold text-left border border-border bg-muted/30;
+  }
+
+  .prose td,
+  .markdown td {
+    @apply px-3 py-2 border border-border;
+  }
+
+  .prose tr,
+  .markdown tr {
+    @apply transition-colors border-b border-border;
+  }
+
+  .prose tr:hover,
+  .markdown tr:hover {
+    @apply bg-muted/30;
+  }
+
+  .prose tbody tr:last-child,
+  .markdown tbody tr:last-child {
+    @apply border-b-0;
+  }
+
+  /* Table container for horizontal scrolling */
+  .prose .table-container,
+  .markdown .table-container {
+    @apply overflow-x-auto;
+  }
+}
