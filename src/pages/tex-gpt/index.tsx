@@ -320,33 +320,34 @@ export default function TexGptPage() {
   return (
     <Box className="flex flex-col h-[calc(100vh-100px)] bg-background">
       {/* Header */}
-      {messages.length > 0 && (
-        <div className="flex-shrink-0 px-6 py-4 border-b border-border bg-card/50">
-          <div className="flex items-center justify-between">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSavePDF}
-              disabled={isGeneratingPDF || messages.length === 0}
-              className="gap-2"
-            >
-              <Download className="w-4 h-4" />
-              {isGeneratingPDF ? "Generating..." : "Save PDF"}
-            </Button>
-            <div className="flex items-center gap-2 ml-auto">
+      {messages?.length > 0 &&
+        messages?.some(msg => msg?.type === "assistant" && !msg?.isError) && (
+          <div className="flex-shrink-0 px-6 py-4 border-b border-border bg-card/50">
+            <div className="flex items-center justify-between">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleClearChat}
+                onClick={handleSavePDF}
+                disabled={isGeneratingPDF || messages.length === 0}
                 className="gap-2"
               >
-                <RotateCcw className="w-4 h-4" />
-                Clear Chat
+                <Download className="w-4 h-4" />
+                {isGeneratingPDF ? "Generating..." : "Save PDF"}
               </Button>
+              <div className="flex items-center gap-2 ml-auto">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleClearChat}
+                  className="gap-2"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Clear Chat
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Messages Area */}
       <Box className="flex-1 min-h-0">
