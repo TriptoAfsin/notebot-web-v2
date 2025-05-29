@@ -76,7 +76,7 @@ const FRONT_PAGE_ITEMS = [
     href: APP_PATHS.JOKES,
   },
   {
-    id: 7,
+    id: 8,
     title: "Tex-GPT",
     icon: <img src={TEX_GPT_ICON} alt="Tex-GPT" />,
     href: APP_PATHS.TEX_GPT,

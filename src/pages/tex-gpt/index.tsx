@@ -21,9 +21,14 @@ import {
   setCookie,
 } from "@/utils/cookie-utils";
 import {
+  generateConversationPDF,
+  generateSimplifiedPDF,
+} from "@/utils/pdf-generator";
+import {
   AlertCircle,
   ChevronDown,
   ChevronUp,
+  Download,
   FileText,
   RefreshCw,
   RotateCcw,
@@ -61,6 +66,7 @@ export default function TexGptPage() {
   const [remainingMessages, setRemainingMessages] = useState<number>(
     APP_CONFIG.limit.texGpt
   );
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
@@ -250,6 +256,51 @@ export default function TexGptPage() {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
+  const handleSavePDF = async () => {
+    if (messages.length === 0) return;
+
+    setIsGeneratingPDF(true);
+    try {
+      // First try the regular PDF generation
+      const success = await generateConversationPDF(messages);
+      if (!success) {
+        // If regular PDF fails, try simplified version
+        console.log(
+          "Regular PDF generation failed, trying simplified version..."
+        );
+        const simplifiedSuccess = await generateSimplifiedPDF(messages);
+        if (!simplifiedSuccess) {
+          alert("Failed to generate PDF. Please try again or contact support.");
+        } else {
+          alert(
+            "Generated a simplified PDF due to memory constraints. Some formatting may be reduced."
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      // Try simplified version as fallback
+      try {
+        console.log("Attempting simplified PDF as fallback...");
+        const simplifiedSuccess = await generateSimplifiedPDF(messages);
+        if (simplifiedSuccess) {
+          alert(
+            "Generated a simplified PDF due to technical issues. Some formatting may be reduced."
+          );
+        } else {
+          alert(
+            "Failed to generate PDF. Please try again later or contact support."
+          );
+        }
+      } catch (fallbackError) {
+        console.error("Fallback PDF generation also failed:", fallbackError);
+        alert("Unable to generate PDF at this time. Please try again later.");
+      }
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
   return (
     <Box className="flex flex-col h-[calc(100vh-100px)] bg-background">
       {/* Header */}
@@ -259,12 +310,24 @@ export default function TexGptPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={handleClearChat}
-              className="gap-2 ml-auto"
+              onClick={handleSavePDF}
+              disabled={isGeneratingPDF || messages.length === 0}
+              className="gap-2"
             >
-              <RotateCcw className="w-4 h-4" />
-              Clear Chat
+              <Download className="w-4 h-4" />
+              {isGeneratingPDF ? "Generating..." : "Save PDF"}
             </Button>
+            <div className="flex items-center gap-2 ml-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleClearChat}
+                className="gap-2"
+              >
+                <RotateCcw className="w-4 h-4" />
+                Clear Chat
+              </Button>
+            </div>
           </div>
         </div>
       )}

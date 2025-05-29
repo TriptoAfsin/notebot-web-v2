@@ -33,7 +33,7 @@ const fetchAutoRagSearch = async (
 ): Promise<AutoRagSearchResponse | null> => {
   try {
     const response = await axios.post(API_CONFIG.AUTO_RAG_SEARCH, {
-      query: `Answer the following question: '${query}'`,
+      query: `${query}`,
     });
     return response?.data ?? null;
   } catch (error) {
