@@ -28,4 +28,5 @@ export const API_CONFIG = {
   RESULTS: `${BASE_URL}/results`,
   JOKES: `${BASE_URL}/app/jokes`,
   AUTO_RAG_SEARCH: `${BASE_URL}/app/tex-gpt`,
+  SPONSORED_CONTENT: "https://triptoafsin.github.io/API-Host/noteBOT.json",
 };

@@ -1,6 +1,6 @@
 "use client";
-import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import { Search, XIcon } from "lucide-react";
 import React, { forwardRef, useEffect, useState } from "react";
 
@@ -77,7 +77,7 @@ export const SearchBox = forwardRef<HTMLButtonElement, SearchProps>(
           autoComplete="off"
           disabled={disabled}
           className={cn(
-            "pl-9 pr-10 h-11 text-base bg-background",
+            "pr-10 pl-9 h-11 text-base bg-background",
             inputClassName
           )}
           placeholder={placeholder}

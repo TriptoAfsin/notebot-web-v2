@@ -3,8 +3,12 @@ import IconLinkButton from "@/components/atoms/buttons/icon-link-button";
 import { Box, Grid } from "@/components/atoms/layout";
 import { TextEffect } from "@/components/atoms/typography/text-effect";
 import AnimatingContainer from "@/components/Layout/AnimatingContainer";
+import SponsoredSlider from "@/components/organisms/sponsored-slider";
 import { APP_CONFIG } from "@/constants/app-config";
 import { APP_PATHS } from "@/constants/path-config";
+import { useFeaturedPreference } from "@/context/featured-preference";
+import { useSponsoredContent } from "@/hooks/networking/content/sponsored-content";
+import { Component } from "react";
 
 const NOTES_ICON = "/icons/notes.png";
 const LAB_REPORTS_ICON = "/icons/lab-report.png";
@@ -83,17 +87,69 @@ const FRONT_PAGE_ITEMS = [
   },
 ];
 
+class SponsoredErrorBoundary extends Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: unknown) {
+    console.error("Sponsored content failed to render:", error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <Box className="px-4 py-6 mx-auto w-full max-w-5xl text-sm rounded-md border border-border/60 bg-muted/20 text-muted-foreground">
+          Unable to load featured content right now.
+        </Box>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function FrontPage() {
+  const { showFeatured, toggleFeatured } = useFeaturedPreference();
+  const {
+    data: sponsoredContent,
+    isLoading: sponsoredLoading,
+    isError: sponsoredError,
+    refetch: refetchSponsored,
+  } = useSponsoredContent();
+
   return (
-    <Box className="flex flex-col items-center min-h-screen p-4">
-      <AnimatingContainer animation="zoomIn" duration={0.8}>
-        <BrandLogo className="w-24 h-24 mb-5" />
+    <Box className="flex flex-col gap-8 items-center p-4 min-h-screen">
+      <AnimatingContainer
+        animation="zoomIn"
+        duration={0.8}
+        className="flex flex-col items-center"
+      >
+        <BrandLogo className="mb-4 w-24 h-24 md:mb-4 md:w-36 md:h-36" />
+        <TextEffect className="text-2xl font-semibold">NoteBot Web</TextEffect>
       </AnimatingContainer>
-      <TextEffect className="text-xl font-semibold">NoteBot Web</TextEffect>
+
+      <SponsoredErrorBoundary>
+        <SponsoredSlider
+          items={sponsoredContent ?? []}
+          isLoading={sponsoredLoading}
+          isError={sponsoredError}
+          onRetry={refetchSponsored}
+          collapsed={!showFeatured}
+          onToggle={toggleFeatured}
+        />
+      </SponsoredErrorBoundary>
       <AnimatingContainer animation="slideDown">
         <Grid
           columns="3"
-          className="w-full grid-cols-3 gap-4 my-6 md:grid-cols-4 lg:grid-cols-6"
+          className="grid-cols-3 gap-4 my-6 w-full md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 lg:gap-6 xl:gap-8"
         >
           {FRONT_PAGE_ITEMS.map(item => (
             <IconLinkButton
@@ -102,7 +158,7 @@ function FrontPage() {
               label={item.title}
               icon={item?.icon}
               labelClassName="font-semibold"
-              iconClassName="w-14 h-14"
+              iconClassName="w-14 h-14 lg:w-15 lg:h-15 xl:w-16 xl:h-16"
               isExternal={item?.isExternal}
             />
           ))}

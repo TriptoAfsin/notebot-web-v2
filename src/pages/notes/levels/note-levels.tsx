@@ -1,6 +1,6 @@
 import NavigationLinkCard from "@/components/atoms/cards/navigation-link-card";
-import { Box } from "@/components/atoms/layout";
 import SearchBox from "@/components/atoms/inputs/search-box";
+import { Box } from "@/components/atoms/layout";
 import RootContentSkeleton from "@/components/atoms/skeletons/root-content-skeleton";
 import { Text } from "@/components/atoms/typography/text";
 import { TextEffect } from "@/components/atoms/typography/text-effect";
@@ -15,9 +15,9 @@ import {
 } from "@/components/ui/breadcrumb";
 import { APP_PATHS } from "@/constants/path-config";
 import { useGetNoteLevelDetails } from "@/hooks/networking/content/note-level-details";
-import { useLocation } from "react-router-dom";
-import { useMemo, useState } from "react";
 import { SearchX } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 
 export default function NoteLevels() {
   const location = useLocation();
@@ -30,10 +30,7 @@ export default function NoteLevels() {
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const subjects = useMemo(
-    () => (Array.isArray(data) ? data : []),
-    [data]
-  );
+  const subjects = useMemo(() => (Array.isArray(data) ? data : []), [data]);
 
   const filteredSubjects = useMemo(() => {
     if (!subjects.length) return [];
@@ -76,7 +73,7 @@ export default function NoteLevels() {
       <TextEffect className="flex items-center mb-6 text-xl font-bold">
         📗 Choose Subject
       </TextEffect>
-      <Box className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
+      <Box className="flex flex-col gap-4 mb-4 sm:flex-row sm:items-center sm:justify-between">
         <Text className="text-base font-medium text-zinc-700 dark:text-zinc-200">
           Search by subject name
         </Text>
@@ -100,7 +97,7 @@ export default function NoteLevels() {
           ))
         ) : subjects.length ? (
           filteredSubjects.length ? (
-            <Box className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+            <Box className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
               {filteredSubjects.map((item, index) => {
                 // Extract the subject from the route
                 const subject = item?.route?.split("/").pop() || "";
@@ -117,9 +114,11 @@ export default function NoteLevels() {
               })}
             </Box>
           ) : (
-            <Box className="flex flex-col items-center justify-center gap-3 py-10 text-muted-foreground">
-              <SearchX className="h-10 w-10" />
-              <Text className="text-center">No subjects match your search.</Text>
+            <Box className="flex flex-col gap-3 justify-center items-center py-10 text-muted-foreground">
+              <SearchX className="w-10 h-10" />
+              <Text className="text-center">
+                No subjects match your search.
+              </Text>
             </Box>
           )
         ) : (

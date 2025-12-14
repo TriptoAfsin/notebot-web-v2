@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Switch } from "@/components/ui/switch";
 import { APP_CONFIG, APP_HEADER_MENU } from "@/constants/app-config";
+import { useFeaturedPreference } from "@/context/featured-preference";
 import { Menu, Moon, Sun } from "lucide-react";
 import { useState } from "react";
 
@@ -18,15 +20,24 @@ function Header() {
   const { theme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
   const { data: status } = useGetPlatformStatus();
+  const { showFeatured, toggleFeatured } = useFeaturedPreference();
 
   const botStatus = status?.botStatus ? "🟢 Live" : "🔴 Down";
 
   const handleCloseSheet = () => setOpen(false);
 
   return (
-    <header className="sticky top-0 z-50 flex items-center h-16 gap-4 px-4 border-b bg-background md:px-6">
-      <BrandLogo className="block w-12 h-12 mr-auto" />
-      <Box className="flex items-center gap-4 ml-auto md:ml-auto md:gap-2 lg:gap-4">
+    <header className="flex fixed inset-x-0 top-0 z-50 gap-4 items-center px-4 h-16 border-b bg-background md:px-6">
+      <BrandLogo className="block mr-auto w-12 h-12" />
+      <Box className="flex gap-4 items-center ml-auto md:ml-auto md:gap-2 lg:gap-4">
+        <Box className="hidden gap-2 items-center text-sm text-muted-foreground md:flex">
+          <span className="text-xs tracking-wide uppercase">Featured</span>
+          <Switch
+            checked={showFeatured}
+            onCheckedChange={toggleFeatured}
+            aria-label="Toggle featured content"
+          />
+        </Box>
         <Button
           variant="ghost"
           size="icon"
@@ -49,7 +60,7 @@ function Header() {
           <SheetContent side="right">
             <nav className={cn("grid gap-6 text-lg")}>
               <BrandLogo
-                className="w-auto h-auto mb-10"
+                className="mb-10 w-auto h-auto"
                 logo={APP_CONFIG.logoIcon}
                 width={92}
                 height={92}
@@ -62,9 +73,21 @@ function Header() {
                 />
               ))}
             </nav>
-            <Box className="absolute flex items-center gap-1 bottom-5 right-5">
-              <TextEffect>Platform Status: </TextEffect>
-              {botStatus}
+            <Box className="flex absolute right-5 bottom-5 left-5 flex-col gap-3">
+              <Box className="flex gap-2 items-center text-sm text-muted-foreground">
+                <span className="text-xs tracking-wide uppercase">
+                  Show Featured
+                </span>
+                <Switch
+                  checked={showFeatured}
+                  onCheckedChange={toggleFeatured}
+                  aria-label="Toggle featured content"
+                />
+              </Box>
+              <Box className="flex gap-1 justify-end items-center">
+                <TextEffect>Platform Status: </TextEffect>
+                {botStatus}
+              </Box>
             </Box>
           </SheetContent>
         </Sheet>
