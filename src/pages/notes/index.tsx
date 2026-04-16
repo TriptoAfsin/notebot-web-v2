@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Card, CardContent } from "@/components/ui/card";
 import { APP_PATHS } from "@/constants/path-config";
+import { ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const levels = [
@@ -28,6 +29,11 @@ const levels = [
   {
     name: "🧑‍🎓 Level 4",
     href: `${APP_PATHS.NOTES}/4`,
+  },
+  {
+    name: "📚 BUTEX Notes (GitHub)",
+    href: "https://github.com/itachi-re/butex-notes",
+    isExternal: true,
   },
 ];
 
@@ -52,21 +58,39 @@ export default function NotesPage() {
         📗 Choose Level for Notes
       </TextEffect>
       <AnimatingContainer animation="slideDown">
-        <Box className="grid grid-cols-1 gap-4 md:grid-cols-2 ">
-          {levels.map((level, index) => (
-            <Link to={level.href} key={index}>
-              <Card className="transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800">
-                <CardContent className="p-4">
-                  <Box className="flex items-center w-full text-xl text-left">
-                    <span className="mr-4 text-2xl">{level.name}</span>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+        <Box className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {levels.map((level, index) =>
+            level.isExternal ? (
+              <a
+                href={level.href}
+                key={index}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Card className="transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                  <CardContent className="p-4">
+                    <Box className="flex justify-between items-center w-full text-xl text-left">
+                      <span className="text-2xl">{level.name}</span>
+                      <ExternalLink className="w-5 h-5 text-muted-foreground" />
+                    </Box>
+                  </CardContent>
+                </Card>
+              </a>
+            ) : (
+              <Link to={level.href} key={index}>
+                <Card className="transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                  <CardContent className="p-4">
+                    <Box className="flex items-center w-full text-xl text-left">
+                      <span className="mr-4 text-2xl">{level.name}</span>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Link>
+            ),
+          )}
         </Box>
       </AnimatingContainer>
-      <Box className="absolute bottom-24 right-5">
+      <Box className="absolute right-5 bottom-24">
         <img src={NOTES_ICON} alt="Notes" className="w-24 h-24" />
       </Box>
     </Box>
