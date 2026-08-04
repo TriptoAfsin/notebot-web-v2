@@ -604,7 +604,12 @@ export default function TexGptPage() {
 
       {/* --- Composer ------------------------------------------------------ */}
       <div className="sticky bottom-0 shrink-0 border-t border-rule bg-paper/90 backdrop-blur-md">
-        <div className="mx-auto max-w-3xl px-md py-md md:px-lg">
+        <div
+          className="mx-auto max-w-3xl px-md py-md md:px-lg"
+          // the composer is the bottom-most control in the installed PWA, so it
+          // has to clear the home indicator itself
+          style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
+        >
           {remainingMessages <= 0 ? (
             <p
               role="status"

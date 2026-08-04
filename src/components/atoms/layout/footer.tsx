@@ -19,6 +19,8 @@ export default function Footer() {
           "container flex flex-col items-center gap-md px-md py-lg md:px-lg",
           "sm:flex-row sm:justify-between sm:gap-lg"
         )}
+        // clears the home-indicator / system nav bar in the installed PWA
+        style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
       >
         <p className="label-mono order-2 sm:order-1">
           © <span className="tabular">{new Date().getFullYear()}</span>{" "}

@@ -29,7 +29,6 @@ const PREFETCH = {
   syllabus: syllabusRootQuery(),
 } as const;
 
-const ICON_SIZE = "h-16 w-16 sm:h-[4.5rem] sm:w-[4.5rem]";
 
 function itemsIn(section: LauncherSection) {
   return LAUNCHER_ITEMS.filter(item => item.section === section);
@@ -73,8 +72,9 @@ export default function FrontPage() {
                       label={item.title}
                       isExternal={item.isExternal}
                       prefetch={PREFETCH[item.id as keyof typeof PREFETCH]}
-                      icon={<item.Icon className={ICON_SIZE} />}
-                      labelClassName="text-sm"
+                      // no size class: the tile sizes the glyph to the space
+                      // left after the label, so labels can't be cropped
+                      icon={<item.Icon />}
                     />
                   </div>
                 );
