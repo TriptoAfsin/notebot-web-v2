@@ -67,7 +67,7 @@ export default function ThinkingRow({
       >
         <div className="flex items-center gap-sm">
           {/* the cube carries its own six-colour sticker palette */}
-          <CubeLoader size={30} label={null} />
+          <CubeLoader size={20} label={null} />
           <p className="label-working text-sm font-medium normal-case tracking-normal">
             {label}
             <span className="ai-caret ml-1" aria-hidden="true" />

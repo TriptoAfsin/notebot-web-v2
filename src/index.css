@@ -518,7 +518,7 @@
    * Size comes from `--cube-size`; the faces derive their offset from it, so one
    * variable scales the whole thing. */
   .cube3d {
-    --cube-size: 34px;
+    --cube-size: 24px;
     /* inline-block, not the span default: width/height are ignored on an inline
        box, which collapsed the whole cube to zero size and rendered nothing */
     display: inline-block;
@@ -565,24 +565,11 @@
     );
   }
 
-  .cube3d__face--front {
-    transform: translateZ(calc(var(--cube-size) / 2));
-  }
-  .cube3d__face--back {
-    transform: rotateY(180deg) translateZ(calc(var(--cube-size) / 2));
-  }
-  .cube3d__face--right {
-    transform: rotateY(90deg) translateZ(calc(var(--cube-size) / 2));
-  }
-  .cube3d__face--left {
-    transform: rotateY(-90deg) translateZ(calc(var(--cube-size) / 2));
-  }
-  .cube3d__face--top {
-    transform: rotateX(90deg) translateZ(calc(var(--cube-size) / 2));
-  }
-  .cube3d__face--bottom {
-    transform: rotateX(-90deg) translateZ(calc(var(--cube-size) / 2));
-  }
+  /* The six per-face `translateZ` transforms are applied inline by <CubeLoader>,
+   * not declared here. They previously lived in `.cube3d__face--front` etc., but
+   * the component builds those names as a template string, so Tailwind's scanner
+   * never saw the literals and purged all six rules out of this layer — leaving
+   * every face at z=0 and the cube rendered as a flat 3×3 square. */
 
   /* Tumbles on two axes at once, so no single face ever sits flat to the viewer
      long enough to read as a plain square. */

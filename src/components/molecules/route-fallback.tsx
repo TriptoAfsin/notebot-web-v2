@@ -29,7 +29,7 @@ export default function RouteFallback() {
       // fades in rather than snapping, so even the delayed appearance is soft
       style={{ animation: "reveal 260ms var(--ease-out) both" }}
     >
-      <CubeLoader size={30} label="Loading" />
+      <CubeLoader size={26} label="Loading" />
     </div>
   );
 }

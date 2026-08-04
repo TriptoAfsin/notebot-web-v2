@@ -7,15 +7,31 @@
  * size reads as a flat rotating rhombus, whereas the 3×3 stickers make the
  * rotation legible and the object unmistakable.
  *
- * Sticker hues are the same six the dimensional icon set uses, so the loader
- * belongs to the app's palette rather than importing a toy-brand red/green.
- * All motion lives in index.css (`.cube3d`), so it stays transform-only,
- * GPU-composited, and swaps to a static three-quarter pose under reduced-motion.
+ * The per-face `translateZ` lives HERE, as an inline transform, not in a
+ * `.cube3d__face--front` CSS class. Those classes were built as a template
+ * string (`cube3d__face--${face}`), so Tailwind's content scanner never saw the
+ * literal names and purged all six rules out of `@layer components` — every face
+ * then rendered at z=0 and the cube collapsed into a flat 3×3 square. Deriving
+ * the transform from `size` in JS makes the geometry immune to purging and keeps
+ * it in one place.
+ *
+ * Sticker hues are the six the dimensional icon set uses, so the loader belongs
+ * to the app's palette rather than importing a toy-brand red/green. The tumble
+ * itself stays in index.css, so it's transform-only, GPU-composited, and swaps to
+ * a static three-quarter pose under reduced-motion.
  */
 
 import { cn } from "@/lib/utils";
 
-const FACES = ["front", "back", "right", "left", "top", "bottom"] as const;
+/** Face orientations. `translateZ(half)` pushes each out to the cube's surface. */
+const FACES = [
+  { key: "front", rotate: "" },
+  { key: "back", rotate: "rotateY(180deg) " },
+  { key: "right", rotate: "rotateY(90deg) " },
+  { key: "left", rotate: "rotateY(-90deg) " },
+  { key: "top", rotate: "rotateX(90deg) " },
+  { key: "bottom", rotate: "rotateX(-90deg) " },
+] as const;
 
 /** The six sticker hues — the icon set's palette, not Rubik's licensed colours. */
 const STICKERS = [252, 195, 300, 85, 150, 35] as const;
@@ -33,7 +49,7 @@ const SCRAMBLE: readonly number[][] = [
 ];
 
 export function CubeLoader({
-  size = 34,
+  size = 24,
   className,
   label,
 }: {
@@ -43,6 +59,8 @@ export function CubeLoader({
   /** Screen-reader text. Pass null when an adjacent label already says it. */
   label?: string | null;
 }) {
+  const half = size / 2;
+
   return (
     <span
       className={cn("cube3d", className)}
@@ -53,14 +71,16 @@ export function CubeLoader({
       {label ? <span className="sr-only">{label}</span> : null}
       <span className="cube3d__inner">
         {FACES.map((face, faceIndex) => (
-          <span key={face} className={`cube3d__face cube3d__face--${face}`}>
+          <span
+            key={face.key}
+            className="cube3d__face"
+            style={{ transform: `${face.rotate}translateZ(${half}px)` }}
+          >
             {SCRAMBLE[faceIndex].map((sticker, tileIndex) => (
               <span
                 key={tileIndex}
                 className="cube3d__tile"
-                style={{
-                  ["--tile-hue" as string]: String(STICKERS[sticker]),
-                }}
+                style={{ ["--tile-hue" as string]: String(STICKERS[sticker]) }}
               />
             ))}
           </span>
