@@ -1,4 +1,4 @@
-export function InstagramIcon(props: React.SVGAttributes<{}>) {
+﻿export function InstagramIcon(props: React.SVGAttributes<SVGSVGElement>) {
   return (
     <svg
       width="24"

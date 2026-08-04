@@ -1,52 +1,46 @@
 import { API_CONFIG } from "@/constants/api-config";
+import { postJson } from "@/lib/api-client";
 import { useMutation } from "@tanstack/react-query";
-import axios, { AxiosError } from "axios";
 
-type AutoRagSearchResponse = {
+export type AutoRagReference = {
+  file_id: string;
+  filename: string;
+  score: number;
+  attributes: {
+    timestamp: number;
+    folder: string;
+  };
+  content: Array<{
+    id: string;
+    type: string;
+    text: string;
+  }>;
+};
+
+export type AutoRagSearchResponse = {
   success: boolean;
   result?: {
     object: string;
     search_query: string;
     response: string;
-    data: Array<{
-      file_id: string;
-      filename: string;
-      score: number;
-      attributes: {
-        timestamp: number;
-        folder: string;
-      };
-      content: Array<{
-        id: string;
-        type: string;
-        text: string;
-      }>;
-    }>;
+    data: AutoRagReference[];
     has_more: boolean;
     next_page: string | null;
   };
-  [key: string]: any;
 };
 
-const fetchAutoRagSearch = async (
-  query: string
-): Promise<AutoRagSearchResponse | null> => {
-  try {
-    const response = await axios.post(API_CONFIG.AUTO_RAG_SEARCH, {
-      query: `${query}`,
-    });
-    return response?.data ?? null;
-  } catch (error) {
-    console.error("Error fetching AutoRAG search results:", error);
-    throw error instanceof AxiosError
-      ? error
-      : new Error("An unexpected error occurred");
-  }
-};
+const fetchAutoRagSearch = (query: string) =>
+  postJson<AutoRagSearchResponse>(
+    API_CONFIG.AUTO_RAG_SEARCH,
+    { query },
+    "asking Tex-GPT",
+    // Retrieval + generation is slower than a content fetch.
+    { timeout: 60_000 }
+  );
 
 export const useAutoRagSearch = () => {
-  const mutation = useMutation<AutoRagSearchResponse | null, Error, string>({
-    mutationFn: (query: string) => fetchAutoRagSearch(query),
+  const mutation = useMutation({
+    mutationFn: fetchAutoRagSearch,
   });
 
   return {

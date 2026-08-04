@@ -138,7 +138,7 @@ const ConversationPDF: React.FC<PDFDocumentProps> = ({
         hour: "2-digit",
         minute: "2-digit",
       });
-    } catch (error) {
+    } catch {
       return new Date().toLocaleDateString();
     }
   };

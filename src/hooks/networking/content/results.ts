@@ -1,34 +1,32 @@
 import { API_CONFIG } from "@/constants/api-config";
-import { useQuery } from "@tanstack/react-query";
-import axios, { AxiosError } from "axios";
+import { getJson } from "@/lib/api-client";
+import { queryKeys, STALE_TIME } from "@/lib/query-keys";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
-type ResultItem = {
+export type ResultItem = {
   href: string;
   content: string;
   date: string;
 };
 
-type ResultResponse = ResultItem[];
+type ResultsEnvelope = { data?: ResultItem[] };
 
-const fetchResults = async (limit?: number): Promise<ResultResponse | null> => {
-  try {
-    const url = new URL(API_CONFIG.RESULTS);
-    if (limit) {
-      url.searchParams.append("limit", limit.toString());
-    }
-    const response = await axios.get(url.toString());
-    return response?.data?.data ?? null;
-  } catch (error) {
-    console.error("Error fetching results details:", error);
-    throw error instanceof AxiosError
-      ? error
-      : new Error("An unexpected error occurred");
-  }
+export const fetchResults = async (limit?: number): Promise<ResultItem[]> => {
+  const envelope = await getJson<ResultsEnvelope>(
+    API_CONFIG.RESULTS,
+    "loading the latest results",
+    limit ? { params: { limit } } : undefined
+  );
+  return envelope?.data ?? [];
 };
 
-export const useGetResults = (limit?: number) => {
-  return useQuery<ResultResponse | null, Error>({
-    queryKey: ["results", limit],
+export const useGetResults = (limit?: number) =>
+  useQuery({
+    queryKey: queryKeys.results(limit),
     queryFn: () => fetchResults(limit),
+    staleTime: STALE_TIME.results,
+    // "Load more" bumps the limit, which is a new cache entry. Without this the
+    // list blanked to skeletons on every click; now the current page stays on
+    // screen and is replaced when the larger page arrives.
+    placeholderData: keepPreviousData,
   });
-};

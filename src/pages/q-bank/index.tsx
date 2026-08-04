@@ -1,81 +1,71 @@
-import { Box } from "@/components/atoms/layout";
-import { TextEffect } from "@/components/atoms/typography/text-effect";
-import AnimatingContainer from "@/components/Layout/AnimatingContainer";
+/* Hallmark · macrostructure: Index-First · design-system: design.md
+ *
+ * Every row here opens a Google Drive folder, so each is marked external. The
+ * previous version used a router <Link> with target="_blank" for absolute URLs,
+ * which asks the router to resolve a path it doesn't own.
+ */
+
+import NavigationLinkCard from "@/components/atoms/cards/navigation-link-card";
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Card, CardContent } from "@/components/ui/card";
+  FolderIcon,
+  ICON_HUE,
+  LevelIcon,
+  QBankIcon,
+} from "@/components/atoms/icons/dimensional";
+import PageMark from "@/components/molecules/page-mark";
+import {
+  Breadcrumbs,
+  IndexGrid,
+  PageShell,
+  PageTitle,
+  RevealItem,
+} from "@/components/molecules/page-shell";
+import { Q_BANK_FOLDERS } from "@/constants/content-config";
 import { APP_PATHS } from "@/constants/path-config";
-import { Link } from "react-router-dom";
 
-const levels = [
-  {
-    name: "🧒 Level 1",
-
-    href: "https://drive.google.com/drive/folders/1Fu7l9FBq3gdWUKNnTix6RibLvy3e25Ra?usp=sharing",
-  },
-  {
-    name: "👦 Level 2",
-
-    href: "https://drive.google.com/drive/folders/1KZvgEL3f1kDY54H5Ha218l7yZfPn6jM6?usp=sharing",
-  },
-  {
-    name: "🧑 Level 3",
-    href: "https://drive.google.com/drive/folders/1mbygPQPSEDkP6NoRxJxJATWI8aBgzxsZ?usp=sharing",
-  },
-  {
-    name: "🧑‍🎓 Level 4",
-    href: "https://drive.google.com/drive/folders/17QQ6mXUYe3FL7sf4VMzdBBkRbJAId0VT?usp=sharing",
-  },
-  {
-    name: "✅ QB Solves",
-    href: "https://drive.google.com/drive/folders/1hvldnZCyOX412pBbdElbRvh33o7uqg2R?usp=sharing",
-  },
-];
-
-const Q_BANK_ICON = "/icons/q-bank.png";
 export default function QBankPage() {
   return (
-    <Box className="container p-6 mx-auto">
-      <Breadcrumb className="mb-6">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href={APP_PATHS.HOME}>Home</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
+    <PageShell>
+      <Breadcrumbs
+        trail={[
+          { label: "Home", href: APP_PATHS.HOME },
+          { label: "Question Bank" },
+        ]}
+      />
 
-          <BreadcrumbItem>
-            <BreadcrumbLink href={APP_PATHS.QBANKS}>
-              Question Bank
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-      <TextEffect className="flex items-center mb-6 text-xl font-bold">
-        📗 Choose Level for Question Bank
-      </TextEffect>
-      <AnimatingContainer animation="slideDown">
-        <Box className="grid grid-cols-1 gap-4 md:grid-cols-2 ">
-          {levels.map((level, index) => (
-            <Link to={level.href} key={index} target="_blank">
-              <Card className="transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800">
-                <CardContent className="p-4">
-                  <Box className="flex items-center w-full text-xl text-left">
-                    <span className="mr-4 text-2xl">{level.name}</span>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </Box>
-      </AnimatingContainer>
-      <Box className="absolute bottom-24 right-5">
-        <img src={Q_BANK_ICON} alt="Q Bank" className="w-24 h-24" />
-      </Box>
-    </Box>
+      <PageTitle
+        icon={<QBankIcon className="h-8 w-8" />}
+        title="Choose a level"
+        meta="Past questions and solves · opens Google Drive"
+      />
+
+      <IndexGrid columns={2}>
+        {Q_BANK_FOLDERS.map((folder, index) => (
+          <RevealItem key={folder.id} index={index}>
+            <NavigationLinkCard
+              label={folder.label}
+              path={folder.href}
+              url={folder.href}
+              isExternal
+              icon={
+                folder.count ? (
+                  <LevelIcon
+                    className="h-9 w-9"
+                    count={folder.count}
+                    hue={ICON_HUE.qbank}
+                  />
+                ) : (
+                  <FolderIcon className="h-9 w-9" hue={ICON_HUE.qbank} />
+                )
+              }
+            />
+          </RevealItem>
+        ))}
+      </IndexGrid>
+
+      <PageMark>
+        <QBankIcon className="h-24 w-24" />
+      </PageMark>
+    </PageShell>
   );
 }

@@ -1,38 +1,37 @@
 import { API_CONFIG } from "@/constants/api-config";
+import { getJson } from "@/lib/api-client";
+import { queryKeys } from "@/lib/query-keys";
 import { useQuery } from "@tanstack/react-query";
-import axios, { AxiosError } from "axios";
 
-type NoteLevelItem = {
+export type NoteSubjectItem = {
   topic: string;
   url?: string;
   route?: string;
 };
 
-type NoteLevelDetails = NoteLevelItem[];
+export type NoteSubjectDetails = NoteSubjectItem[];
 
-const fetchNoteSubjectDetails = async (
+export const fetchNoteSubjectDetails = (
   level: number | string,
   subject: string
-): Promise<NoteLevelDetails | null> => {
-  try {
-    const response = await axios.get(
-      API_CONFIG.NOTES_SUBJECT_DETAILS(level, subject)
-    );
-    return response?.data ?? null;
-  } catch (error) {
-    console.error("Error fetching note subject details:", error);
-    throw error instanceof AxiosError
-      ? error
-      : new Error("An unexpected error occurred");
-  }
-};
+) =>
+  getJson<NoteSubjectDetails>(
+    API_CONFIG.NOTES_SUBJECT_DETAILS(level, subject),
+    "loading the topics for this subject"
+  );
+
+export const noteSubjectQuery = (level: number | string, subject: string) => ({
+  // Keyed on level *and* subject — two levels can share a subject name, and the
+  // old key (subject only) made them collide in the cache.
+  queryKey: queryKeys.notes.subject(level, subject),
+  queryFn: () => fetchNoteSubjectDetails(level, subject),
+});
 
 export const useGetNoteSubjectDetails = (
   level: number | string,
   subject: string
-) => {
-  return useQuery<NoteLevelDetails | null, Error>({
-    queryKey: ["noteSubjectDetails", subject],
-    queryFn: () => fetchNoteSubjectDetails(level, subject),
+) =>
+  useQuery({
+    ...noteSubjectQuery(level, subject),
+    enabled: Boolean(level && subject),
   });
-};

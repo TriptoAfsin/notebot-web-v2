@@ -1,4 +1,4 @@
-export function FacebookIcon(props: React.SVGAttributes<{}>) {
+﻿export function FacebookIcon(props: React.SVGAttributes<SVGSVGElement>) {
   return (
     <svg
       width="24"

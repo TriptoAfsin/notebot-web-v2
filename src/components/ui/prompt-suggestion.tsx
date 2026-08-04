@@ -25,8 +25,13 @@ function PromptSuggestion({
     return (
       <Button
         variant={variant || "outline"}
-        size={size || "lg"}
-        className={cn("rounded-full", className)}
+        size={size || "default"}
+        className={cn(
+          // full width, left-aligned, and the label may wrap — these are
+          // content chips, not affordance labels
+          "h-auto w-full justify-start whitespace-normal py-2.5 text-left font-normal",
+          className
+        )}
         {...props}
       >
         {children}

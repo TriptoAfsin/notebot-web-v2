@@ -1,18 +1,33 @@
+/* Hallmark · macrostructure: Catalogue · design-system: design.md
+ *
+ * The launcher tile. Same square grid position it always had; what changed is
+ * that the icon is now a dimensional SVG rather than a PNG, and the tile has one
+ * hover signal — a 2px lift with a border shift, gated behind a fine pointer so
+ * touch devices don't inherit a state they can't leave.
+ */
+
+import AppLink, { type PrefetchTarget } from "@/components/atoms/links/app-link";
 import { cn } from "@/lib/utils";
-import React from "react";
-import { Link } from "react-router-dom";
-import { Box } from "../layout";
+import { ArrowUpRight } from "lucide-react";
+import type { ReactNode } from "react";
 
 type IconLinkButtonProps = {
   label: string;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
   path: string;
   className?: string;
   labelClassName?: string;
   iconClassName?: string;
   size?: "sm" | "regular" | "lg";
   isExternal?: boolean;
+  prefetch?: PrefetchTarget;
 };
+
+const sizeClasses = {
+  sm: "gap-2xs p-xs text-xs",
+  regular: "gap-xs p-sm text-sm",
+  lg: "gap-sm p-md text-base",
+} as const;
 
 export default function IconLinkButton({
   label,
@@ -23,34 +38,44 @@ export default function IconLinkButton({
   iconClassName,
   size = "regular",
   isExternal = false,
+  prefetch,
 }: IconLinkButtonProps) {
-  const sizeClasses = {
-    sm: "text-sm p-2",
-    regular: "text-base p-3",
-    lg: "text-lg p-4",
-  };
-
   return (
-    <Link
+    <AppLink
       to={path}
-      className={cn(
-        "flex flex-col items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors aspect-square dark:bg-zinc-800 dark:hover:bg-zinc-700",
-        sizeClasses[size],
-        className
-      )}
-      target={isExternal ? "_blank" : "_self"}
+      external={isExternal}
+      prefetch={isExternal ? undefined : prefetch}
+      className="rounded-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal"
     >
-      <Box className={cn("text-gray-600 dark:text-gray-100", iconClassName)}>
-        {icon}
-      </Box>
-      <span
+      <div
         className={cn(
-          "mt-1 text-gray-800 dark:text-white text-nowrap",
-          labelClassName
+          "surface tile-lift relative flex aspect-square flex-col items-center justify-center overflow-hidden",
+          sizeClasses[size],
+          className
         )}
       >
-        {label}
-      </span>
-    </Link>
+        {isExternal ? (
+          <ArrowUpRight
+            className="absolute right-2 top-2 h-3.5 w-3.5 text-muted-foreground"
+            aria-hidden="true"
+          />
+        ) : null}
+
+        <span
+          className={cn("tile-icon flex items-center justify-center", iconClassName)}
+        >
+          {icon}
+        </span>
+
+        <span
+          className={cn(
+            "affordance mt-1 max-w-full truncate text-center font-medium text-foreground",
+            labelClassName
+          )}
+        >
+          {label}
+        </span>
+      </div>
+    </AppLink>
   );
 }

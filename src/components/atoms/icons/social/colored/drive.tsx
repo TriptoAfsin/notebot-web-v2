@@ -1,4 +1,4 @@
-export function GoogleDriveIcon(props: React.SVGAttributes<{}>) {
+﻿export function GoogleDriveIcon(props: React.SVGAttributes<SVGSVGElement>) {
   return (
     <svg
       height="48px"

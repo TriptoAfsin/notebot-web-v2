@@ -9,7 +9,9 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-xl border bg-card text-card-foreground shadow",
+      // hairlines do the work — the stock `shadow` is dropped, since a shadow
+      // on a dark card reads as a glow (design.md § surface language)
+      "rounded-card border border-rule bg-card text-card-foreground",
       className
     )}
     {...props}

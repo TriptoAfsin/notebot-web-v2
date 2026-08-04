@@ -1,8 +1,26 @@
+/* Hallmark · macrostructure: Workbench · design-system: design.md · designed-as-app
+ *
+ * Tex-GPT. The conversation state machine is unchanged — same messages, same
+ * limit cookie, same retry and PDF paths. What changed is the surface:
+ *
+ *  - Message rows are on the token surfaces, with a real avatar column and the
+ *    references folded into a disclosure instead of an ad-hoc toggle.
+ *  - The pending row shows a staged label plus a caret where the answer will be
+ *    written, rather than a generic spinner.
+ *  - Answers reveal block by block (`.ai-answer`, ~460ms regardless of length)
+ *    instead of appearing in one jump. Not a per-character typewriter: that
+ *    makes long answers slow to read for no benefit.
+ *  - `alert()` calls are replaced by the toast system that was already here.
+ *  - The 1.46 MB PDF renderer is imported on click rather than with the route.
+ *  - The `h-[calc(100vh-100px)]` magic number is gone; the column sizes itself.
+ */
+
 import { Box } from "@/components/atoms/layout";
-import { TextEffect } from "@/components/atoms/typography/text-effect";
-import AnimatingContainer from "@/components/Layout/AnimatingContainer";
+import TexGptMark from "@/components/atoms/icons/tex-gpt-mark";
+import UserAvatar from "@/components/atoms/user-avatar";
+import ChatHistoryPanel from "@/components/molecules/chat-history-panel";
+import ThinkingRow from "@/components/molecules/thinking-row";
 import { Button } from "@/components/ui/button";
-import { Loader } from "@/components/ui/loader";
 import { Markdown } from "@/components/ui/markdown";
 import {
   PromptInput,
@@ -24,21 +42,20 @@ import {
   setCookie,
 } from "@/utils/cookie-utils";
 import {
-  generateConversationPDF,
-  generateSimplifiedPDF,
-} from "@/utils/pdf-generator";
+  type Conversation,
+  useChatHistory,
+} from "@/hooks/use-chat-history";
 import {
-  AlertCircle,
   ChevronDown,
-  ChevronUp,
   Download,
   FileText,
-  RefreshCw,
+  History,
+  Plus,
   RotateCcw,
   Send,
-  User2Icon,
+  TriangleAlert,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type Message = {
   id: string;
@@ -52,12 +69,19 @@ type Message = {
   }>;
 };
 
+/** Stable id for the thread being written, so history updates it in place. */
+function newConversationId() {
+  return `c${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+}
+
 const SUGGESTED_PROMPTS = [
   "What is yarn?",
   "What is fabric?",
   "What is textile?",
   "What is yarn count?",
 ];
+
+const MAX_QUERY_LENGTH = 300;
 
 export default function TexGptPage() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -71,9 +95,15 @@ export default function TexGptPage() {
   );
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const { toasts, showToast, removeToast } = useToast();
+
+  /* --- History ------------------------------------------------------------
+   * The thread being written owns a stable id, so each new message updates the
+   * same history entry rather than appending a duplicate. */
+  const history = useChatHistory();
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [conversationId, setConversationId] = useState(newConversationId);
 
   const {
     mutate: performSearch,
@@ -84,19 +114,12 @@ export default function TexGptPage() {
     reset,
   } = useAutoRagSearch();
 
-  const scrollToBottom = () => {
-    if (messagesEndRef.current && messagesContainerRef.current) {
-      messagesEndRef.current.scrollIntoView({
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({
         behavior: "smooth",
         block: "end",
       });
-    }
-  };
-
-  useEffect(() => {
-    // Small delay to ensure DOM is updated before scrolling
-    const timeoutId = setTimeout(() => {
-      scrollToBottom();
     }, 100);
 
     return () => clearTimeout(timeoutId);
@@ -105,36 +128,36 @@ export default function TexGptPage() {
   useEffect(() => {
     if (searchResult && isSuccess) {
       if (searchResult.success) {
-        // Extract references from the data
         const references =
-          searchResult.result?.data?.map((item: any) => ({
+          searchResult.result?.data?.map(item => ({
             filename: item.filename,
             score: item.score,
           })) || [];
 
-        const assistantMessage: Message = {
-          id: Date.now().toString(),
-          type: "assistant",
-          content:
-            searchResult.result?.response ||
-            "I couldn't find a relevant response.",
-          timestamp: new Date(),
-          references,
-        };
-
-        setMessages(prev => [...prev, assistantMessage]);
+        setMessages(prev => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            type: "assistant",
+            content:
+              searchResult.result?.response ||
+              "I couldn't find a relevant response.",
+            timestamp: new Date(),
+            references,
+          },
+        ]);
       } else {
-        // Handle API error response
-        const errorMessage: Message = {
-          id: Date.now().toString(),
-          type: "assistant",
-          content:
-            "Sorry, I encountered an error while processing your request.",
-          timestamp: new Date(),
-          isError: true,
-        };
-
-        setMessages(prev => [...prev, errorMessage]);
+        setMessages(prev => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            type: "assistant",
+            content:
+              "Sorry, I encountered an error while processing your request.",
+            timestamp: new Date(),
+            isError: true,
+          },
+        ]);
       }
 
       setIsWaitingForResponse(false);
@@ -143,89 +166,74 @@ export default function TexGptPage() {
 
   useEffect(() => {
     if (error) {
-      const errorMessage: Message = {
-        id: Date.now().toString(),
-        type: "assistant",
-        content: "Sorry, I encountered an error while processing your request.",
-        timestamp: new Date(),
-        isError: true,
-      };
-
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages(prev => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          type: "assistant",
+          content: error.message,
+          timestamp: new Date(),
+          isError: true,
+        },
+      ]);
       setIsWaitingForResponse(false);
     }
   }, [error]);
 
-  //count
   useEffect(() => {
-    const currentUserMessageCountFromCookie = getCookie(MESSAGE_LIMIT_KEY);
+    const stored = getCookie(MESSAGE_LIMIT_KEY);
     const today = new Date().toISOString().split("T")[0];
-    if (currentUserMessageCountFromCookie?.date === today) {
+    if (stored?.date === today) {
       setRemainingMessages(
-        APP_CONFIG.limit.texGpt -
-          Number(currentUserMessageCountFromCookie?.count || 0)
+        APP_CONFIG.limit.texGpt - Number(stored?.count || 0)
       );
     } else {
-      // console.log(`Today: ${today}, resetting cookie`);
-      setCookie(MESSAGE_LIMIT_KEY, {
-        count: 0,
-        date: today,
-      });
+      setCookie(MESSAGE_LIMIT_KEY, { count: 0, date: today });
       setRemainingMessages(APP_CONFIG.limit.texGpt);
     }
-    // setRemainingMessages(currentUserMessageCountFromCookie);
   }, []);
 
-  const handleSubmit = () => {
-    if (
-      !currentQuery.trim() ||
-      isWaitingForResponse ||
-      currentQuery.length > 300 ||
-      remainingMessages <= 0
-    )
-      return;
+  const isOverLength = currentQuery.length > MAX_QUERY_LENGTH;
+  const canSubmit =
+    Boolean(currentQuery.trim()) &&
+    !isWaitingForResponse &&
+    !isOverLength &&
+    remainingMessages > 0;
 
-    // Validate content before proceeding
+  const handleSubmit = () => {
+    if (!canSubmit) return;
+
     const contentValidation = validateContent(currentQuery.trim());
     if (!contentValidation.isValid) {
       showToast(
         "error",
         contentValidation.reason || "Invalid content detected",
-        "Content Blocked"
+        "Content blocked"
       );
       return;
     }
 
-    // Check message limit
     const { canSendMessage: canSend, remainingMessages: remaining } =
       checkAndUpdateMessageLimit();
     setRemainingMessages(remaining);
+    if (!canSend) return;
 
-    if (!canSend) {
-      return;
-    }
+    setMessages(prev => [
+      ...prev,
+      {
+        id: Date.now().toString(),
+        type: "user",
+        content: currentQuery.trim(),
+        timestamp: new Date(),
+      },
+    ]);
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      type: "user",
-      content: currentQuery.trim(),
-      timestamp: new Date(),
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-
-    // If there's already a conversation, include the last user message in the query
     let queryToSend = currentQuery.trim();
-    if (messages.length > 0) {
-      // Find the last user message
-      const lastUserMessage = [...messages]
-        .reverse()
-        .find(msg => msg.type === "user");
-      if (lastUserMessage) {
-        queryToSend = `Current query: ${currentQuery.trim()}\n\nPrevious question: ${
-          lastUserMessage.content
-        }`;
-      }
+    const lastUserMessage = [...messages]
+      .reverse()
+      .find(msg => msg.type === "user");
+    if (lastUserMessage) {
+      queryToSend = `Current query: ${currentQuery.trim()}\n\nPrevious question: ${lastUserMessage.content}`;
     }
 
     setIsWaitingForResponse(true);
@@ -233,43 +241,86 @@ export default function TexGptPage() {
     setCurrentQuery("");
   };
 
-  const handleSuggestionClick = (suggestion: string) => {
-    setCurrentQuery(suggestion);
-  };
+  /* Persist the thread as it grows, so a reload resumes it instead of losing it.
+   * Keyed on the id, so this updates one entry rather than accumulating. */
+  useEffect(() => {
+    if (messages.length === 0) return;
+    history.save(conversationId, messages);
+    // `history.save` is a stable useCallback; including the whole object would
+    // re-run this on every list mutation it makes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages, conversationId]);
 
-  const handleClearChat = () => {
+  /** Start a fresh thread. The previous one stays in history. */
+  const handleNewChat = useCallback(() => {
     setMessages([]);
     setCurrentQuery("");
     setIsWaitingForResponse(false);
+    setConversationId(newConversationId());
     reset();
-  };
+  }, [reset]);
+
+  const handleOpenConversation = useCallback(
+    (conversation: Conversation) => {
+      setIsHistoryOpen(false);
+      setIsWaitingForResponse(false);
+      reset();
+      setConversationId(conversation.id);
+      setMessages(conversation.messages);
+      setCurrentQuery("");
+    },
+    [reset]
+  );
+
+  /* Optimistic delete + Undo, not a confirmation dialog — the row goes
+   * immediately and comes back if Undo is pressed. */
+  const handleDeleteConversation = useCallback(
+    (conversation: Conversation) => {
+      history.remove(conversation.id);
+      if (conversation.id === conversationId) handleNewChat();
+      showToast(
+        "info",
+        `Deleted “${conversation.title}”`,
+        undefined,
+        7000,
+        { label: "Undo", onClick: () => history.restore(conversation) }
+      );
+    },
+    [conversationId, handleNewChat, history, showToast]
+  );
+
+  const handleClearAllHistory = useCallback(() => {
+    const snapshot = history.conversations;
+    history.clear();
+    handleNewChat();
+    showToast(
+      "info",
+      `Cleared ${snapshot.length} conversation${snapshot.length === 1 ? "" : "s"}`,
+      undefined,
+      7000,
+      {
+        label: "Undo",
+        onClick: () => snapshot.forEach(c => history.restore(c)),
+      }
+    );
+  }, [handleNewChat, history, showToast]);
 
   const handleRetry = () => {
-    // Find the last user message to retry
     const lastUserMessage = [...messages]
       .reverse()
       .find(msg => msg.type === "user");
-
-    if (lastUserMessage) {
-      setIsWaitingForResponse(true);
-      performSearch(lastUserMessage.content);
-    }
+    if (!lastUserMessage) return;
+    setIsWaitingForResponse(true);
+    performSearch(lastUserMessage.content);
   };
 
   const toggleReferences = (messageId: string) => {
     setExpandedReferences(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(messageId)) {
-        newSet.delete(messageId);
-      } else {
-        newSet.add(messageId);
-      }
-      return newSet;
+      const next = new Set(prev);
+      if (next.has(messageId)) next.delete(messageId);
+      else next.add(messageId);
+      return next;
     });
-  };
-
-  const formatTimestamp = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   const handleSavePDF = async () => {
@@ -277,309 +328,295 @@ export default function TexGptPage() {
 
     setIsGeneratingPDF(true);
     try {
-      // First try the regular PDF generation
-      const success = await generateConversationPDF(messages);
-      if (!success) {
-        // If regular PDF fails, try simplified version
-        console.log(
-          "Regular PDF generation failed, trying simplified version..."
+      /* Imported here, not at module scope: @react-pdf/renderer is ~1.4 MB and
+       * most visitors never export a transcript. */
+      const { generateConversationPDF, generateSimplifiedPDF } = await import(
+        "@/utils/pdf-generator"
+      );
+
+      if (await generateConversationPDF(messages)) return;
+
+      if (await generateSimplifiedPDF(messages)) {
+        showToast(
+          "info",
+          "Saved a simplified PDF — some formatting was reduced.",
+          "Downloaded"
         );
-        const simplifiedSuccess = await generateSimplifiedPDF(messages);
-        if (!simplifiedSuccess) {
-          alert("Failed to generate PDF. Please try again or contact support.");
-        } else {
-          alert(
-            "Generated a simplified PDF due to memory constraints. Some formatting may be reduced."
-          );
-        }
+        return;
       }
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      // Try simplified version as fallback
-      try {
-        console.log("Attempting simplified PDF as fallback...");
-        const simplifiedSuccess = await generateSimplifiedPDF(messages);
-        if (simplifiedSuccess) {
-          alert(
-            "Generated a simplified PDF due to technical issues. Some formatting may be reduced."
-          );
-        } else {
-          alert(
-            "Failed to generate PDF. Please try again later or contact support."
-          );
-        }
-      } catch (fallbackError) {
-        console.error("Fallback PDF generation also failed:", fallbackError);
-        alert("Unable to generate PDF at this time. Please try again later.");
-      }
+
+      showToast(
+        "error",
+        "Couldn't build the PDF. Try again with a shorter conversation.",
+        "Export failed"
+      );
+    } catch {
+      showToast(
+        "error",
+        "Couldn't build the PDF. Try again in a moment.",
+        "Export failed"
+      );
     } finally {
       setIsGeneratingPDF(false);
     }
   };
 
+  const hasAnswer = messages.some(m => m.type === "assistant" && !m.isError);
+
   return (
-    <Box className="flex flex-col h-[calc(100vh-100px)] bg-background">
-      {/* Header */}
-      {messages?.length > 0 &&
-        messages?.some(msg => msg?.type === "assistant" && !msg?.isError) && (
-          <div className="flex-shrink-0 px-6 py-4 border-b border-border bg-card/50">
-            <div className="flex items-center justify-between">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSavePDF}
-                disabled={isGeneratingPDF || messages.length === 0}
-                className="gap-2"
+    <div className="flex min-h-[calc(100dvh-13rem)] flex-col">
+      {/* --- Transcript actions -------------------------------------------
+       * History and New chat are always available; the export and reset only
+       * appear once there's something to act on. */}
+      <div className="shrink-0 border-b border-rule bg-paper-2">
+        {/* All actions group hard-right, matching the app header's own
+            brand-left / controls-right rhythm. */}
+        <div className="container flex items-center justify-end gap-xs px-md py-sm md:px-lg">
+          {hasAnswer ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSavePDF}
+              disabled={isGeneratingPDF}
+              className="w-32"
+            >
+              <Download aria-hidden="true" />
+              {isGeneratingPDF ? "Building…" : "Save PDF"}
+            </Button>
+          ) : null}
+
+          {messages.length > 0 ? (
+            <Button variant="ghost" size="sm" onClick={handleNewChat}>
+              <Plus aria-hidden="true" />
+              <span className="affordance">New chat</span>
+            </Button>
+          ) : null}
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsHistoryOpen(true)}
+          >
+            <History aria-hidden="true" />
+            <span className="affordance">History</span>
+            {history.conversations.length > 0 ? (
+              <span className="label-mono tabular ml-0.5">
+                {history.conversations.length}
+              </span>
+            ) : null}
+          </Button>
+        </div>
+      </div>
+
+      {/* --- Transcript ---------------------------------------------------- */}
+      <div className="flex-1 px-md py-lg md:px-lg">
+        {messages.length === 0 ? (
+          /* The mark and title are centred; the lede and the suggestion block
+             are left-flush. Stacking all four on one centred axis is the
+             centred-everything hero tell — two centred elements is the cap. */
+          <div className="mx-auto max-w-2xl py-xl">
+            <div className="flex flex-col items-center">
+              <TexGptMark className="reveal h-24 w-24" title="Tex-GPT" />
+              <h1
+                className="reveal mt-sm font-display text-xl font-bold"
+                style={{ ["--i" as string]: 1 }}
               >
-                <Download className="w-4 h-4" />
-                {isGeneratingPDF ? "Generating..." : "Save PDF"}
-              </Button>
-              <div className="flex items-center gap-2 ml-auto">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleClearChat}
-                  className="gap-2"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  Clear Chat
-                </Button>
+                Tex-GPT
+              </h1>
+            </div>
+
+            <p
+              className="reveal mt-lg max-w-[62ch] text-base text-muted-foreground"
+              style={{ ["--i" as string]: 2 }}
+            >
+              Ask about yarn, fabric, dyeing, machinery — anything textile.
+              Answers are drawn from NoteBot's own document set and cite the
+              files they came from.
+            </p>
+
+            <div className="reveal mt-xl" style={{ ["--i" as string]: 3 }}>
+              <div className="mb-sm flex items-center gap-sm">
+                <h2 className="label-mono">Try one of these</h2>
+                <span aria-hidden="true" className="h-px flex-1 bg-rule" />
+              </div>
+              <div className="grid gap-xs sm:grid-cols-2">
+                {SUGGESTED_PROMPTS.map(prompt => (
+                  <PromptSuggestion
+                    key={prompt}
+                    onClick={() => setCurrentQuery(prompt)}
+                  >
+                    {prompt}
+                  </PromptSuggestion>
+                ))}
               </div>
             </div>
           </div>
-        )}
+        ) : (
+          <div className="mx-auto max-w-3xl space-y-lg">
+            {messages.map(message => {
+              const isUser = message.type === "user";
+              const referenceCount = message.references?.length ?? 0;
+              const isOpen = expandedReferences.has(message.id);
 
-      {/* Messages Area */}
-      <Box className="flex-1 min-h-0">
-        <Box
-          ref={messagesContainerRef}
-          className="h-full px-6 py-4 pb-6 overflow-y-auto"
-        >
-          {messages?.length === 0 ? (
-            <Box className="flex flex-col items-center justify-center h-full space-y-8">
-              <AnimatingContainer animation="zoomIn" duration={0.8}>
-                <img
-                  src="/icons/tex-gpt.png"
-                  alt="TexGPT"
-                  className="size-24"
-                />
-              </AnimatingContainer>
-
-              <Box className="text-center">
-                <TextEffect className="text-xl font-semibold">
-                  Welcome to TexGPT
-                </TextEffect>
-                <AnimatingContainer animation="slideDown" duration={0.8}>
-                  <p className="max-w-md text-muted-foreground">
-                    Ask me anything relevant to textile industry! I'm powered by
-                    advanced RAG technology to provide accurate and contextual
-                    responses.
-                  </p>
-                </AnimatingContainer>
-              </Box>
-
-              {/* Suggested Prompts */}
-              <Box className="w-full max-w-2xl space-y-3">
-                <h3 className="text-sm font-medium text-center text-muted-foreground">
-                  Try asking about:
-                </h3>
-                <Box className="grid gap-2 sm:grid-cols-2">
-                  {SUGGESTED_PROMPTS.map((prompt, index) => (
-                    <PromptSuggestion
-                      key={index}
-                      onClick={() => handleSuggestionClick(prompt)}
-                      className="text-left"
-                    >
-                      {prompt}
-                    </PromptSuggestion>
-                  ))}
-                </Box>
-              </Box>
-            </Box>
-          ) : (
-            <Box className="max-w-4xl mx-auto space-y-6">
-              {messages?.map(message => (
-                <Box
+              return (
+                <div
                   key={message.id}
                   className={cn(
-                    "flex gap-4",
-                    message.type === "user" ? "justify-end" : "justify-start"
+                    "flex gap-sm",
+                    isUser ? "flex-row-reverse" : "flex-row"
                   )}
                 >
-                  {message.type === "assistant" && (
-                    <div className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0 ">
-                      <img
-                        src="/icons/tex-gpt.png"
-                        alt="TexGPT"
-                        className="w-6 h-6"
-                      />
-                    </div>
-                  )}
+                  {/* avatar column */}
+                  <div className="shrink-0 pt-0.5">
+                    {isUser ? (
+                      <UserAvatar />
+                    ) : (
+                      <TexGptMark className="h-8 w-8" title="Tex-GPT" />
+                    )}
+                  </div>
 
-                  <Box
+                  <div
                     className={cn(
-                      "max-w-[80%] rounded-2xl px-4 py-3 break-words overflow-hidden",
-                      message.type === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted"
+                      "min-w-0 max-w-[min(46rem,86%)] rounded-card px-md py-sm",
+                      isUser
+                        ? "border border-signal/25 bg-signal/10"
+                        : message.isError
+                          ? "border border-danger/30 bg-danger/5"
+                          : "border border-rule bg-paper-2"
                     )}
                   >
-                    <Box className="space-y-2">
-                      {message.type === "assistant" ? (
-                        message.isError ? (
-                          <Box className="space-y-3">
-                            <p className="text-sm text-red-600 break-words dark:text-red-400">
-                              {message.content}
-                            </p>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={handleRetry}
-                              className="gap-2"
-                              disabled={isWaitingForResponse}
-                            >
-                              <RefreshCw className="w-4 h-4" />
-                              Retry
-                            </Button>
-                          </Box>
-                        ) : (
-                          <Markdown className="prose-sm prose max-w-none break-words dark:prose-invert [&_*]:break-words [&_code]:break-all [&_pre]:overflow-x-auto [&_pre]:whitespace-pre-wrap">
-                            {message.content}
-                          </Markdown>
-                        )
-                      ) : (
-                        <p className="text-sm break-words">{message.content}</p>
-                      )}
-
-                      <Box className="flex items-center justify-between">
-                        <span className="text-xs opacity-70">
-                          {formatTimestamp(message.timestamp)}
-                        </span>
-                        {message.type === "assistant" && !message.isError && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => toggleReferences(message.id)}
-                            className="h-auto p-1 text-xs opacity-70 hover:opacity-100"
-                          >
-                            <FileText className="w-3 h-3 mr-1" />
-                            {message.references && message.references.length > 0
-                              ? `${message.references.length} reference${
-                                  message.references.length !== 1 ? "s" : ""
-                                }`
-                              : "No references"}
-                            {expandedReferences.has(message.id) ? (
-                              <ChevronUp className="w-3 h-3 ml-1" />
-                            ) : (
-                              <ChevronDown className="w-3 h-3 ml-1" />
-                            )}
-                          </Button>
+                    {isUser ? (
+                      <p className="whitespace-pre-wrap break-words text-base text-foreground">
+                        {message.content}
+                      </p>
+                    ) : message.isError ? (
+                      <div className="space-y-sm">
+                        <p className="flex items-start gap-xs text-sm text-danger">
+                          <TriangleAlert
+                            className="mt-0.5 h-4 w-4 shrink-0"
+                            aria-hidden="true"
+                          />
+                          {message.content}
+                        </p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleRetry}
+                          disabled={isWaitingForResponse}
+                        >
+                          <RotateCcw aria-hidden="true" />
+                          Try again
+                        </Button>
+                      </div>
+                    ) : (
+                      <Markdown
+                        className={cn(
+                          // block-by-block reveal, length-independent
+                          "ai-answer prose prose-sm dark:prose-invert",
+                          // measure capped at a readable 70ch — chat bubbles
+                          // conventionally run wider, but prose past ~75ch
+                          // loses the eye on the return sweep
+                          "max-w-[70ch] break-words",
+                          "[&_*]:break-words [&_code]:break-all",
+                          "[&_pre]:overflow-x-auto [&_pre]:whitespace-pre-wrap"
                         )}
-                      </Box>
-                    </Box>
-
-                    {/* References */}
-                    {message.type === "assistant" &&
-                      !message.isError &&
-                      expandedReferences.has(message.id) && (
-                        <Box className="pt-3 mt-3 space-y-2 border-t border-border/50">
-                          <p className="text-xs font-medium opacity-70">
-                            References:
-                          </p>
-                          {message.references &&
-                          message.references.length > 0 ? (
-                            <Box className="space-y-1">
-                              {message.references
-                                .slice(0, 10)
-                                .map((reference, index) => (
-                                  <Box
-                                    key={index}
-                                    className="p-2 text-xs rounded-lg bg-background/50"
-                                  >
-                                    <Box className="flex items-center justify-between">
-                                      <p className="font-medium break-words truncate opacity-90">
-                                        {reference.filename}
-                                      </p>
-                                      <span className="ml-2 text-xs opacity-60 shrink-0">
-                                        {(reference.score * 100).toFixed(1)}%
-                                      </span>
-                                    </Box>
-                                  </Box>
-                                ))}
-                            </Box>
-                          ) : (
-                            <p className="text-xs opacity-60">
-                              No references found for this response.
-                            </p>
-                          )}
-                        </Box>
-                      )}
-                  </Box>
-
-                  {message.type === "user" && (
-                    <Box className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0 bg-muted">
-                      <Box
-                        className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary shrink-0"
-                        title="You"
                       >
-                        <User2Icon className="w-6 h-6 text-primary-foreground" />
-                      </Box>
-                    </Box>
-                  )}
-                </Box>
-              ))}
+                        {message.content}
+                      </Markdown>
+                    )}
 
-              {/* Loading State */}
-              {isWaitingForResponse && (
-                <Box className="flex justify-start gap-4">
-                  <Box
-                    className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary shrink-0"
-                    title="TexGPT"
-                  >
-                    <img
-                      src="/icons/tex-gpt.png"
-                      alt="TexGPT"
-                      className="w-6 h-6"
-                    />
-                  </Box>
-                  <Box className="max-w-[80%] rounded-2xl bg-muted px-4 py-3">
-                    <Box className="flex items-center gap-3">
-                      <Loader variant="typing" size="sm" />
-                      <span className="text-sm text-muted-foreground">
-                        {isSearching
-                          ? "Searching knowledge base..."
-                          : "Thinking..."}
-                      </span>
-                    </Box>
-                  </Box>
-                </Box>
-              )}
+                    {/* meta row */}
+                    <div className="mt-xs flex items-center gap-sm">
+                      <time
+                        className="label-mono"
+                        dateTime={message.timestamp.toISOString()}
+                      >
+                        {message.timestamp.toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </time>
 
-              <Box ref={messagesEndRef} />
-            </Box>
-          )}
-        </Box>
-      </Box>
+                      {!isUser && !message.isError ? (
+                        <button
+                          type="button"
+                          onClick={() => toggleReferences(message.id)}
+                          aria-expanded={isOpen}
+                          className={cn(
+                            "ml-auto inline-flex items-center gap-1.5 rounded-sm",
+                            "label-mono transition-colors duration-short ease-out",
+                            "hover:text-foreground",
+                            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal"
+                          )}
+                        >
+                          <FileText className="h-3 w-3" aria-hidden="true" />
+                          {referenceCount > 0
+                            ? `${referenceCount} source${referenceCount === 1 ? "" : "s"}`
+                            : "No sources"}
+                          <ChevronDown
+                            className={cn(
+                              "h-3 w-3 transition-transform duration-short ease-out",
+                              isOpen && "rotate-180"
+                            )}
+                            aria-hidden="true"
+                          />
+                        </button>
+                      ) : null}
+                    </div>
 
-      {/* Input Area */}
-      <Box className="flex-shrink-0 p-6 border-t border-border bg-card/50">
-        <Box className="max-w-4xl mx-auto space-y-2">
+                    {!isUser && !message.isError && isOpen ? (
+                      <div className="mt-sm space-y-2xs border-t border-rule pt-sm">
+                        {referenceCount > 0 ? (
+                          message.references!.slice(0, 10).map(reference => (
+                            <div
+                              key={reference.filename}
+                              className="flex items-center gap-sm rounded-control bg-paper-3 px-sm py-1.5"
+                            >
+                              <span className="min-w-0 flex-1 truncate text-xs text-ink-2">
+                                {reference.filename}
+                              </span>
+                              <span className="label-mono tabular shrink-0">
+                                {(reference.score * 100).toFixed(0)}%
+                              </span>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-xs text-muted-foreground">
+                            This answer wasn't matched to a source document.
+                          </p>
+                        )}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* --- Pending row --------------------------------------------- */}
+            {isWaitingForResponse ? (
+              <ThinkingRow isRetrieving={isSearching} />
+            ) : null}
+
+            <Box ref={messagesEndRef} />
+          </div>
+        )}
+      </div>
+
+      {/* --- Composer ------------------------------------------------------ */}
+      <div className="sticky bottom-0 shrink-0 border-t border-rule bg-paper/90 backdrop-blur-md">
+        <div className="mx-auto max-w-3xl px-md py-md md:px-lg">
           {remainingMessages <= 0 ? (
-            <Box className="flex items-center gap-2 p-3 mb-2 text-sm text-yellow-600 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 dark:text-yellow-400">
-              <AlertCircle className="w-4 h-4" />
-              <span>
-                You've reached your daily message limit. Please try again
-                tomorrow.
-              </span>
-            </Box>
-          ) : remainingMessages <= 5 ? (
-            <Box className="flex items-center gap-2 p-3 mb-2 text-sm text-yellow-600 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 dark:text-yellow-400">
-              <AlertCircle className="w-4 h-4" />
-              <span>
-                You have {remainingMessages} message
-                {remainingMessages !== 1 ? "s" : ""} remaining today.
-              </span>
-            </Box>
+            <p
+              role="status"
+              className="mb-sm flex items-center gap-xs rounded-control border border-rule bg-paper-3 px-sm py-2 text-sm text-ink-2"
+            >
+              <TriangleAlert
+                className="h-4 w-4 shrink-0 text-danger"
+                aria-hidden="true"
+              />
+              You've used today's {APP_CONFIG.limit.texGpt} questions. The
+              allowance resets tomorrow.
+            </p>
           ) : null}
 
           <PromptInput
@@ -587,60 +624,58 @@ export default function TexGptPage() {
             onValueChange={setCurrentQuery}
             onSubmit={handleSubmit}
             isLoading={isWaitingForResponse}
-            className="shadow-lg"
           >
             <PromptInputTextarea
               placeholder={
                 remainingMessages > 0
-                  ? "Ask me anything..."
-                  : "Daily message limit reached"
+                  ? "Ask about yarn, fabric, dyeing…"
+                  : "Daily limit reached"
               }
-              className="text-base"
               disabled={isWaitingForResponse || remainingMessages <= 0}
             />
-            <PromptInputActions>
-              <PromptInputAction tooltip="Send message">
+            <PromptInputActions className="justify-end pr-1">
+              <PromptInputAction tooltip="Send · Enter">
                 <Button
-                  size="sm"
+                  size="icon"
                   onClick={handleSubmit}
-                  disabled={
-                    !currentQuery.trim() ||
-                    isWaitingForResponse ||
-                    currentQuery.length > 300 ||
-                    remainingMessages <= 0
-                  }
-                  className="rounded-full"
+                  disabled={!canSubmit}
+                  aria-label="Send message"
                 >
-                  <Send className="w-4 h-4" />
+                  <Send aria-hidden="true" />
                 </Button>
               </PromptInputAction>
             </PromptInputActions>
           </PromptInput>
 
-          {/* Character Counter and Messages Remaining */}
-          <Box className="flex justify-between">
-            <span className="text-xs text-muted-foreground">
-              {remainingMessages > 0 &&
-                `${remainingMessages} message${
-                  remainingMessages !== 1 ? "s" : ""
-                } remaining today`}
+          <div className="mt-xs flex items-center justify-between gap-sm">
+            <span className="label-mono">
+              {remainingMessages > 0
+                ? `${remainingMessages} left today`
+                : "Limit reached"}
             </span>
             <span
               className={cn(
-                "text-xs",
-                currentQuery.length > 300
-                  ? "text-red-500"
-                  : "text-muted-foreground"
+                "label-mono tabular",
+                isOverLength && "text-danger"
               )}
             >
-              {currentQuery.length}/300
+              {currentQuery.length}/{MAX_QUERY_LENGTH}
             </span>
-          </Box>
-        </Box>
-      </Box>
+          </div>
+        </div>
+      </div>
 
-      {/* Toast Container */}
+      <ChatHistoryPanel
+        open={isHistoryOpen}
+        onOpenChange={setIsHistoryOpen}
+        conversations={history.conversations}
+        activeId={messages.length > 0 ? conversationId : null}
+        onOpenConversation={handleOpenConversation}
+        onDelete={handleDeleteConversation}
+        onClearAll={handleClearAllHistory}
+      />
+
       <ToastContainer toasts={toasts} onClose={removeToast} />
-    </Box>
+    </div>
   );
 }

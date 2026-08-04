@@ -1,4 +1,4 @@
-export default function HeartIcon(props: React.SVGAttributes<{}>) {
+﻿export default function HeartIcon(props: React.SVGAttributes<SVGSVGElement>) {
   return (
     <svg
       fill="currentColor"

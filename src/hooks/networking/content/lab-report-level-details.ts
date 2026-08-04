@@ -1,32 +1,26 @@
 import { API_CONFIG } from "@/constants/api-config";
+import { getJson } from "@/lib/api-client";
+import { queryKeys } from "@/lib/query-keys";
 import { useQuery } from "@tanstack/react-query";
-import axios, { AxiosError } from "axios";
 
-type LabReportLevelItem = {
+export type LabLevelItem = {
   subName: string;
   url?: string;
   route?: string;
 };
 
-type LabReportLevelDetails = LabReportLevelItem[];
+export type LabLevelDetails = LabLevelItem[];
 
-const fetchLabReportLevelDetails = async (
-  level: number | string
-): Promise<LabReportLevelDetails | null> => {
-  try {
-    const response = await axios.get(API_CONFIG.LAB_REPORTS_LEVEL(level));
-    return response?.data ?? null;
-  } catch (error) {
-    console.error("Error fetching lab report level details:", error);
-    throw error instanceof AxiosError
-      ? error
-      : new Error("An unexpected error occurred");
-  }
-};
+export const fetchLabReportLevelDetails = (level: number | string) =>
+  getJson<LabLevelDetails>(
+    API_CONFIG.LAB_REPORTS_LEVEL(level),
+    "loading the subjects for this level"
+  );
 
-export const useGetLabReportLevelDetails = (level: number | string) => {
-  return useQuery<LabReportLevelDetails | null, Error>({
-    queryKey: ["labReportLevelDetails", level],
-    queryFn: () => fetchLabReportLevelDetails(level),
-  });
-};
+export const labLevelQuery = (level: number | string) => ({
+  queryKey: queryKeys.labs.level(level),
+  queryFn: () => fetchLabReportLevelDetails(level),
+});
+
+export const useGetLabReportLevelDetails = (level: number | string) =>
+  useQuery({ ...labLevelQuery(level), enabled: Boolean(level) });

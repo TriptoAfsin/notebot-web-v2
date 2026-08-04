@@ -1,4 +1,4 @@
-export function XIcon(props: React.SVGAttributes<{}>) {
+﻿export function XIcon(props: React.SVGAttributes<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 1227 1227" width="24" height="24" {...props}>
       <path d="m654.53 592.55 276.12 394.95h-113.32l-225.32-322.28v-.02l-33.08-47.31-263.21-376.5h113.32l212.41 303.85z" />

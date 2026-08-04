@@ -1,81 +1,743 @@
+/* Hallmark · genre: modern-minimal · macrostructure: Catalogue + Index-First + Workbench
+ * theme: Cobalt (brand-anchored, hue 252) · design-system: design.md · designed-as-app
+ * nav: N13 inline ⌘K pill · footer: Ft2 inline single line · enrichment: Tier-B hand-built SVG
+ * pre-emit critique: P5 H5 E5 S4 R5 V4
+ */
+
+/* Display: Satoshi (Fontshare) — geometric, tight, confident.
+ * Body: Geist + Mono: JetBrains Mono (Google Fonts). */
+@import url("https://api.fontshare.com/v2/css?f[]=satoshi@700,500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ---------------------------------------------------------------------------
+ * Tokens
+ *
+ * `--c-*` hold bare OKLCH components (L C H) so Tailwind can compose an alpha
+ * channel onto them — that keeps `bg-muted/50`, `bg-primary/10` and friends
+ * working across the already-installed shadcn components.
+ * `--color-*` are the full-colour aliases used by hand-written CSS.
+ * The legacy shadcn names are re-pointed at the same ramp, so no shadcn
+ * component needs rewriting to inherit the new system.
+ * ------------------------------------------------------------------------- */
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    /* Paper → ink ramp, cool, anchored on the inherited brand hue 252 */
+    --c-paper: 98.4% 0.004 252;
+    --c-paper-2: 96.2% 0.006 252;
+    --c-paper-3: 93.4% 0.008 252;
+    --c-rule: 89.5% 0.009 252;
+    --c-rule-2: 82% 0.012 252;
+    --c-muted: 52% 0.014 252;
+    --c-ink-2: 34% 0.016 252;
+    --c-ink: 21% 0.02 252;
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    /* The one signal */
+    --c-accent: 54.5% 0.17 252;
+    --c-accent-hover: 49% 0.175 252;
+    --c-accent-ink: 99% 0.004 252;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
+    --c-danger: 55% 0.19 27;
+    --c-success: 58% 0.13 155;
 
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
+    /* Avatar gradient — accent into violet. Identity, not decoration: the ban on
+       gradients covers headlines and hero backgrounds, not an avatar chip. */
+    /* Blue → teal, not blue → magenta. A blue-to-purple gradient is the single
+       most-recognised AI tell; this stays inside the icon set's own palette
+       (brand blue 252 → labs cyan 195). */
+    --c-avatar-from: 58% 0.185 258;
+    --c-avatar-to: 62% 0.145 198;
+    /* white, as a named token — used only for gloss highlights and inner rims */
+    --c-gloss: 100% 0 0;
+    /* the cube's plastic body */
+    --c-cube-body: 22% 0.012 260;
 
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
+    /* 3D glyph surfaces (the launcher icon set).
+     *
+     * Lightness and chroma live here; HUE is supplied per-icon via `--glyph-hue`
+     * on the icon's own <svg>. That's what lets the set run ten colours off one
+     * lighting model — light direction, surface relationships and the dark-mode
+     * response are identical across every glyph, only the hue rotates.
+     *
+     * Each surface has a `-hi` (upper-left) and a base (lower-right) stop, so
+     * every fill is a gradient and the light direction is baked into the ramp. */
+    --glyph-hue: 252;
 
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
+    --g-body-hi-l: 79%;
+    --g-body-hi-c: 0.155;
+    --g-body-l: 61%;
+    --g-body-c: 0.195;
 
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
+    --g-light-hi-l: 90%;
+    --g-light-hi-c: 0.095;
+    --g-light-l: 76%;
+    --g-light-c: 0.15;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --g-deep-hi-l: 60%;
+    --g-deep-hi-c: 0.19;
+    --g-deep-l: 45%;
+    --g-deep-c: 0.175;
 
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
+    --g-dark-hi-l: 45%;
+    --g-dark-hi-c: 0.155;
+    --g-dark-l: 33%;
+    --g-dark-c: 0.125;
 
-    --radius: 0.5rem;
+    /* Pages stay near-white in BOTH themes. Real 3D icon sets keep their paper
+       light on a dark ground — it's what makes the glyph pop off the tile. */
+    --g-paper-hi-l: 99.5%;
+    --g-paper-hi-c: 0.004;
+    --g-paper-l: 95%;
+    --g-paper-c: 0.016;
+    --g-paper-2-hi-l: 95%;
+    --g-paper-2-hi-c: 0.016;
+    --g-paper-2-l: 86%;
+    --g-paper-2-c: 0.032;
+
+    --g-shadow: 24% 0.03 252;
+    --g-shadow-alpha: 0.2;
+
+    /* Full-colour aliases */
+    --color-paper: oklch(var(--c-paper));
+    --color-paper-2: oklch(var(--c-paper-2));
+    --color-paper-3: oklch(var(--c-paper-3));
+    --color-rule: oklch(var(--c-rule));
+    --color-rule-2: oklch(var(--c-rule-2));
+    --color-muted: oklch(var(--c-muted));
+    --color-ink-2: oklch(var(--c-ink-2));
+    --color-ink: oklch(var(--c-ink));
+    --color-accent: oklch(var(--c-accent));
+    --color-accent-hover: oklch(var(--c-accent-hover));
+    --color-accent-ink: oklch(var(--c-accent-ink));
+    --color-accent-wash: oklch(var(--c-accent) / 0.09);
+    --color-focus: oklch(var(--c-accent));
+    --color-danger: oklch(var(--c-danger));
+    --color-danger-wash: oklch(var(--c-danger) / 0.1);
+    --color-success: oklch(var(--c-success));
+
+    /* Type — 2+1: display, body, and the mono outlier. No fourth family. */
+    --font-display: "Satoshi", ui-sans-serif, system-ui, sans-serif;
+    --font-body: "Geist", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+    /* Spacing — 4pt, named by role */
+    --space-3xs: 0.125rem;
+    --space-2xs: 0.25rem;
+    --space-xs: 0.5rem;
+    --space-sm: 0.75rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2.5rem;
+    --space-2xl: 4rem;
+    --space-3xl: 6rem;
+
+    /* Motion */
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    --dur-micro: 120ms;
+    --dur-short: 220ms;
+    --dur-long: 420ms;
+
+    /* Depth — one whisper, never stacked */
+    --shadow-whisper: 0 1px 2px oklch(var(--c-ink) / 0.05);
+    --shadow-float: 0 8px 30px -12px oklch(var(--c-ink) / 0.18);
+
+    --radius-card: 0.625rem;
+    --radius-control: 0.5rem;
+
+    /* ---- shadcn compatibility layer (bare components + alpha slot) ---- */
+    --background: var(--c-paper);
+    --foreground: var(--c-ink);
+    --card: var(--c-paper-2);
+    --card-foreground: var(--c-ink);
+    --popover: var(--c-paper);
+    --popover-foreground: var(--c-ink);
+    --primary: var(--c-accent);
+    --primary-foreground: var(--c-accent-ink);
+    --secondary: var(--c-paper-3);
+    --secondary-foreground: var(--c-ink);
+    --muted: var(--c-paper-3);
+    --muted-foreground: var(--c-muted);
+    --accent: var(--c-paper-3);
+    --accent-foreground: var(--c-ink);
+    --destructive: var(--c-danger);
+    --destructive-foreground: var(--c-accent-ink);
+    --border: var(--c-rule);
+    --input: var(--c-rule);
+    --ring: var(--c-accent);
+    --radius: 0.625rem;
   }
 
   .dark {
-    --background: 0 0% 10%; /* #1a1a1a */
-    --foreground: 0 0% 98%;
+    /* Elevation goes lighter, never darker. Hue never moves — only L and C. */
+    --c-paper: 14.5% 0.008 252;
+    --c-paper-2: 18.2% 0.01 252;
+    --c-paper-3: 22.5% 0.012 252;
+    --c-rule: 27% 0.012 252;
+    --c-rule-2: 34% 0.014 252;
+    --c-muted: 66% 0.014 252;
+    --c-ink-2: 85% 0.01 252;
+    --c-ink: 95% 0.008 252;
 
-    --card: 0 0% 13%; /* #212121 */
-    --card-foreground: 0 0% 98%;
+    --c-accent: 70% 0.145 252;
+    --c-accent-hover: 76% 0.14 252;
+    --c-accent-ink: 15% 0.02 252;
 
-    --popover: 0 0% 13%;
-    --popover-foreground: 0 0% 98%;
+    --c-danger: 68% 0.17 27;
+    --c-success: 72% 0.12 155;
 
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
+    --c-avatar-from: 66% 0.175 258;
+    --c-avatar-to: 70% 0.14 198;
+    --c-cube-body: 26% 0.012 260;
 
-    --secondary: 0 0% 17%; /* #2b2b2b */
-    --secondary-foreground: 0 0% 98%;
+    /* On the dark ground the coloured surfaces lift a little and shed a touch of
+       chroma so they don't vibrate. Paper stays light — see the note above. The
+       ground shadow goes deeper, since it has less to contrast against. */
+    --g-body-hi-l: 83%;
+    --g-body-hi-c: 0.14;
+    --g-body-l: 67%;
+    --g-body-c: 0.185;
 
-    --muted: 0 0% 17%;
-    --muted-foreground: 0 0% 63.9%;
+    --g-light-hi-l: 93%;
+    --g-light-hi-c: 0.08;
+    --g-light-l: 81%;
+    --g-light-c: 0.135;
 
-    --accent: 0 0% 17%;
-    --accent-foreground: 0 0% 98%;
+    --g-deep-hi-l: 66%;
+    --g-deep-hi-c: 0.185;
+    --g-deep-l: 51%;
+    --g-deep-c: 0.175;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --g-dark-hi-l: 50%;
+    --g-dark-hi-c: 0.155;
+    --g-dark-l: 38%;
+    --g-dark-c: 0.13;
 
-    --border: 0 0% 20%; /* #333333 */
-    --input: 0 0% 20%;
-    --ring: 0 0% 83.1%;
+    --g-shadow: 0% 0 0;
+    --g-shadow-alpha: 0.45;
+
+    /* Dark surfaces get elevation from lightness, so the whisper goes flat */
+    --shadow-whisper: 0 1px 2px oklch(0% 0 0 / 0.24);
+    --shadow-float: 0 8px 30px -12px oklch(0% 0 0 / 0.5);
   }
 }
 
 @layer base {
+  html,
+  body {
+    /* clip, never hidden — hidden breaks the sticky header */
+    overflow-x: clip;
+  }
+
   * {
     @apply border-border;
   }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    /* The background must live on <html>, not only on <body>. During a view
+     * transition the snapshots are composited above the page, and if the root
+     * canvas has no colour of its own the browser's default white shows through
+     * the crossfade — that was the white flash on navigation. */
+    background-color: var(--color-paper);
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background;
+    color: var(--color-ink-2);
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-synthesis-weight: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-style: normal;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--color-ink);
+    /* long subject names must break inside the word, not blow out the row */
+    overflow-wrap: anywhere;
+    min-width: 0;
+  }
+
+  /* Focus rings appear instantly — never transitioned in. */
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background: var(--color-accent-wash);
+    color: var(--color-ink);
+  }
+
+  /* Numbers that column up align */
+  .tabular,
+  th,
+  td {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Coarse pointers get real hit targets */
+  @media (pointer: coarse) {
+    button,
+    [role="button"] {
+      min-height: 44px;
+    }
+  }
+
+  /* --- Scrollbars ------------------------------------------------------
+   * The OS default scrollbar is a grey slab that ignores the theme entirely —
+   * it read as a seam down the side of the command palette. This puts it on the
+   * token ramp: hairline-thin, no track, no arrows, and it darkens on hover. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-rule-2) transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track,
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--color-rule-2);
+    /* the inset border is what makes the thumb read as a thin pill rather
+       than a full-width slab */
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-muted);
+  }
+
+  ::-webkit-scrollbar-button {
+    display: none;
   }
 }
 
-/* Markdown Table Styling */
+/* ---------------------------------------------------------------------------
+ * Components
+ * ------------------------------------------------------------------------- */
+
+@layer components {
+  /* --- Machine-readout label: the mono outlier's one role ---------------- */
+  .label-mono {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  /* --- The one orchestrated route entrance ------------------------------ */
+  .reveal {
+    opacity: 0;
+    transform: translateY(8px);
+    animation: reveal var(--dur-long) var(--ease-out) forwards;
+    animation-delay: calc(var(--i, 0) * 40ms);
+  }
+
+  @keyframes reveal {
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* --- Surface language: hairlines do the work ------------------------- */
+  .surface {
+    background: var(--color-paper-2);
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-card);
+  }
+
+  /* One hover signal per element. Border + fill shift here; lift on tiles. */
+  .surface-interactive {
+    background: var(--color-paper-2);
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-card);
+    transition:
+      border-color var(--dur-short) var(--ease-out),
+      background-color var(--dur-short) var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .surface-interactive:hover {
+      border-color: var(--color-rule-2);
+      background: var(--color-paper-3);
+    }
+  }
+
+  /* --- Launcher tile ---------------------------------------------------
+   * One hover signal: a 2px lift plus the border/fill shift, with the icon
+   * leaning in slightly ahead of it so the pair reads as depth. Gated behind a
+   * fine pointer — a touch device that can't leave :hover must never enter it.
+   * Keyboard focus gets the same treatment. */
+  .tile-lift {
+    transition:
+      transform var(--dur-short) var(--ease-out),
+      border-color var(--dur-short) var(--ease-out),
+      background-color var(--dur-short) var(--ease-out);
+  }
+
+  .tile-icon {
+    transition: transform var(--dur-short) var(--ease-out);
+  }
+
+  /* ONE composed gesture: the tile rises and its border catches the light, and
+   * the icon rises very slightly further so the pair reads as parallax depth.
+   * The surface fill deliberately does NOT change — lift + border + fill + scale
+   * would be four simultaneous hover effects, which is the "make it
+   * interactive" reflex the design system bans. */
+  @media (hover: hover) and (pointer: fine) {
+    a:hover > .tile-lift {
+      transform: translateY(-2px);
+      border-color: var(--color-rule-2);
+    }
+
+    a:hover > .tile-lift .tile-icon {
+      transform: translateY(-1px);
+    }
+  }
+
+  a:focus-visible > .tile-lift {
+    border-color: var(--color-rule-2);
+    background: var(--color-paper-3);
+  }
+
+  /* the press cancels the lift — 120ms, per the timing canon */
+  a:active > .tile-lift {
+    transform: translateY(0);
+    transition-duration: var(--dur-micro);
+  }
+
+  /* --- Index row rail --------------------------------------------------
+   * Scales from the vertical centre. Transform-only, so it's free to animate. */
+  .row-rail {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 2px;
+    background: var(--color-accent);
+    transform: scaleY(0);
+    transform-origin: center;
+    transition: transform var(--dur-short) var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    a:hover .row-rail {
+      transform: scaleY(1);
+    }
+  }
+
+  a:focus-visible .row-rail {
+    transform: scaleY(1);
+  }
+
+  .row-chevron {
+    transition: transform var(--dur-short) var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    a:hover .row-chevron {
+      transform: translateX(2px);
+    }
+  }
+
+  /* --- Accent anchor beside a page title -------------------------------- */
+  .accent-tick {
+    display: inline-block;
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 1px;
+    background: var(--color-accent);
+    flex: none;
+  }
+
+  /* --- Skeletons: functional motion, keeps running under reduced-motion -- */
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    background: var(--color-paper-3);
+    border-radius: var(--radius-control);
+  }
+
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      oklch(var(--c-rule-2) / 0.55),
+      transparent
+    );
+    animation: skeleton-sweep 1.4s var(--ease-in-out) infinite;
+  }
+
+  @keyframes skeleton-sweep {
+    to {
+      transform: translateX(100%);
+    }
+  }
+
+  /* --- Clickable affordances never wrap -------------------------------- */
+  .affordance {
+    white-space: nowrap;
+  }
+
+  /* --- 3D cube loader ---------------------------------------------------
+   * A real CSS 3D cube — six faces on `transform-style: preserve-3d`, tumbling
+   * on two axes. Chosen over a spinner because the app already speaks in
+   * isometric solids, so the busy state belongs to the same visual family as the
+   * icon set. It's transform-only, so it's GPU-composited and costs nothing.
+   *
+   * Size comes from `--cube-size`; the faces derive their offset from it, so one
+   * variable scales the whole thing. */
+  .cube3d {
+    --cube-size: 34px;
+    /* inline-block, not the span default: width/height are ignored on an inline
+       box, which collapsed the whole cube to zero size and rendered nothing */
+    display: inline-block;
+    width: var(--cube-size);
+    height: var(--cube-size);
+    perspective: calc(var(--cube-size) * 4);
+    flex: none;
+  }
+
+  .cube3d__inner {
+    display: block;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    animation: cube-tumble 5s linear infinite;
+  }
+
+  /* Each face is a 3×3 grid of tiles on a dark plastic body, so the cube reads
+     as a Rubik's cube rather than a solid block — the tile grid is what makes the
+     rotation legible at this size. */
+  .cube3d__face {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: calc(var(--cube-size) * 0.045);
+    padding: calc(var(--cube-size) * 0.045);
+    position: absolute;
+    inset: 0;
+    border-radius: calc(var(--cube-size) * 0.12);
+    background: oklch(var(--c-cube-body));
+    backface-visibility: hidden;
+  }
+
+  .cube3d__tile {
+    border-radius: calc(var(--cube-size) * 0.055);
+    /* Lightness and chroma come from the glyph ramp; only the hue is per-tile,
+       supplied via --tile-hue from the sticker palette. Same discipline as the
+       icon set — one lighting model, many hues. */
+    background: linear-gradient(
+      135deg,
+      oklch(var(--g-body-hi-l) var(--g-body-hi-c) var(--tile-hue, 252)),
+      oklch(var(--g-body-l) var(--g-body-c) var(--tile-hue, 252))
+    );
+  }
+
+  .cube3d__face--front {
+    transform: translateZ(calc(var(--cube-size) / 2));
+  }
+  .cube3d__face--back {
+    transform: rotateY(180deg) translateZ(calc(var(--cube-size) / 2));
+  }
+  .cube3d__face--right {
+    transform: rotateY(90deg) translateZ(calc(var(--cube-size) / 2));
+  }
+  .cube3d__face--left {
+    transform: rotateY(-90deg) translateZ(calc(var(--cube-size) / 2));
+  }
+  .cube3d__face--top {
+    transform: rotateX(90deg) translateZ(calc(var(--cube-size) / 2));
+  }
+  .cube3d__face--bottom {
+    transform: rotateX(-90deg) translateZ(calc(var(--cube-size) / 2));
+  }
+
+  /* Tumbles on two axes at once, so no single face ever sits flat to the viewer
+     long enough to read as a plain square. */
+  @keyframes cube-tumble {
+    0% {
+      transform: rotateX(-24deg) rotateY(0deg) rotateZ(0deg);
+    }
+    100% {
+      transform: rotateX(336deg) rotateY(360deg) rotateZ(0deg);
+    }
+  }
+
+  /* --- Gradient avatar --------------------------------------------------- */
+  .avatar-gradient {
+    background: linear-gradient(
+      135deg,
+      oklch(var(--c-avatar-from)) 0%,
+      oklch(var(--c-avatar-to)) 100%
+    );
+    color: oklch(var(--c-gloss));
+  }
+
+  /* A hairline inner highlight, so the chip reads as a raised object rather
+     than a flat coloured circle. */
+  .avatar-rim {
+    box-shadow: inset 0 0 0 1px oklch(var(--c-gloss) / 0.22);
+  }
+
+  /* --- Staged loading label ---------------------------------------------
+   * The label shifts as retrieval progresses. Sweeping the text with a moving
+   * highlight reads as "working" without another moving part on the row. */
+  .label-working {
+    background: linear-gradient(
+      100deg,
+      var(--color-muted) 20%,
+      var(--color-ink) 42%,
+      var(--color-muted) 64%
+    );
+    background-size: 220% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: label-sweep 2s linear infinite;
+  }
+
+  @keyframes label-sweep {
+    from {
+      background-position: 140% center;
+    }
+    to {
+      background-position: -40% center;
+    }
+  }
+
+  /* --- AI answer reveal -------------------------------------------------
+   * The answer assembles block by block instead of appearing all at once.
+   *
+   * Deliberately NOT a per-character typewriter: at any readable character rate
+   * a long answer takes seconds to finish, and the visitor is left waiting on an
+   * animation for text the app already has. This staggers the markdown's own top
+   * level children — paragraphs, lists, headings — so the effect is
+   * length-independent and always settles inside ~460ms.
+   *
+   * Markdown is fully rendered and measured before the animation runs, so
+   * nothing reflows and no fenced block is ever sliced mid-syntax. */
+  .ai-answer > * {
+    animation: ai-block-in 300ms var(--ease-out) both;
+  }
+
+  .ai-answer > *:nth-child(1) {
+    animation-delay: 0ms;
+  }
+  .ai-answer > *:nth-child(2) {
+    animation-delay: 45ms;
+  }
+  .ai-answer > *:nth-child(3) {
+    animation-delay: 90ms;
+  }
+  .ai-answer > *:nth-child(4) {
+    animation-delay: 125ms;
+  }
+  .ai-answer > *:nth-child(5) {
+    animation-delay: 155ms;
+  }
+  /* everything past the fifth block lands together — the stagger has already
+     done its job and a long answer must not creep */
+  .ai-answer > *:nth-child(n + 6) {
+    animation-delay: 175ms;
+  }
+
+  @keyframes ai-block-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* The caret on the pending row — the one place a blink is legitimate, since
+     it sits where the answer is about to be written. */
+  .ai-caret {
+    display: inline-block;
+    width: 0.5ch;
+    height: 1em;
+    vertical-align: text-bottom;
+    background: var(--color-accent);
+    animation: ai-caret 1s steps(2) infinite;
+  }
+
+  @keyframes ai-caret {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  /* --- Theme crossfade --------------------------------------------------
+   * Flipping the `.dark` class repoints ~40 custom properties at once, which
+   * normally snaps. ThemeProvider stamps `data-theme-switching` on <html> for
+   * the length of the flip, and only then do colours transition — so this never
+   * fights the hover transitions, which have their own (shorter) timings. */
+  html[data-theme-switching] *,
+  html[data-theme-switching] *::before,
+  html[data-theme-switching] *::after {
+    transition:
+      background-color 320ms var(--ease-in-out),
+      border-color 320ms var(--ease-in-out),
+      color 320ms var(--ease-in-out),
+      fill 320ms var(--ease-in-out),
+      stroke 320ms var(--ease-in-out),
+      box-shadow 320ms var(--ease-in-out) !important;
+    transition-delay: 0ms !important;
+  }
+
+  /* --- Underline-grow on inline links ---------------------------------- */
+  .link-accent {
+    color: var(--color-accent);
+    text-decoration-line: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+    text-decoration-color: transparent;
+    transition: text-decoration-color var(--dur-short) var(--ease-out);
+  }
+
+  .link-accent:hover {
+    text-decoration-color: currentColor;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Markdown / prose — Tex-GPT transcript and note bodies
+ * ------------------------------------------------------------------------- */
+
 @layer components {
   .prose table,
   .markdown table {
@@ -84,13 +746,16 @@
   }
 
   .prose thead,
-  .markdown thead {
-    @apply bg-muted/50;
+  .markdown thead,
+  .prose th,
+  .markdown th {
+    background: var(--color-paper-3);
   }
 
   .prose th,
   .markdown th {
-    @apply px-3 py-2 font-semibold text-left border border-border bg-muted/30;
+    @apply px-3 py-2 font-semibold text-left border border-border;
+    color: var(--color-ink);
   }
 
   .prose td,
@@ -100,12 +765,13 @@
 
   .prose tr,
   .markdown tr {
-    @apply transition-colors border-b border-border;
+    @apply border-b border-border;
+    transition: background-color var(--dur-short) var(--ease-out);
   }
 
   .prose tr:hover,
   .markdown tr:hover {
-    @apply bg-muted/30;
+    background: var(--color-paper-3);
   }
 
   .prose tbody tr:last-child,
@@ -113,9 +779,127 @@
     @apply border-b-0;
   }
 
-  /* Table container for horizontal scrolling */
   .prose .table-container,
   .markdown .table-container {
     @apply overflow-x-auto;
+  }
+
+  .prose a,
+  .markdown a {
+    color: var(--color-accent);
+    text-decoration-line: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+    text-decoration-color: transparent;
+    transition: text-decoration-color var(--dur-short) var(--ease-out);
+  }
+
+  .prose a:hover,
+  .markdown a:hover {
+    text-decoration-color: currentColor;
+  }
+
+  .prose code,
+  .markdown code {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Route transitions
+ * View Transitions API where supported; the Framer Motion fallback in
+ * <RouteTransition> covers everywhere else.
+ * ------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* The outgoing snapshot is HELD fully opaque underneath while the incoming one
+   * fades in on top of it. A symmetrical crossfade (old → 0 while new → 1)
+   * leaves both partially transparent at the midpoint, which is what let the
+   * canvas show through. Holding the old frame means there is never a
+   * see-through frame at all. */
+  ::view-transition-old(root) {
+    animation: none;
+    opacity: 1;
+  }
+
+  ::view-transition-new(root) {
+    animation: vt-in 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes vt-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Reduced motion — spatial motion collapses to a crossfade.
+ * Functional loaders keep running, just slower.
+ * ------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 150ms !important;
+    transition-duration: 150ms !important;
+  }
+
+  .reveal {
+    animation: reveal-reduced 150ms linear forwards;
+    animation-delay: 0ms;
+  }
+
+  @keyframes reveal-reduced {
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .skeleton::after {
+    animation-duration: 2.4s !important;
+  }
+
+  /* the answer arrives complete; only the fade survives */
+  .ai-answer > * {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .ai-caret {
+    animation: none;
+  }
+
+  /* the cube holds a static three-quarter pose and breathes instead of tumbling */
+  .cube3d__inner {
+    animation: none;
+    transform: rotateX(-24deg) rotateY(-38deg);
+  }
+
+  .cube3d {
+    animation: cube-breathe 1.8s var(--ease-in-out) infinite !important;
+  }
+
+  @keyframes cube-breathe {
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  .label-working {
+    animation: none;
+    background: none;
+    -webkit-background-clip: border-box;
+    background-clip: border-box;
+    color: var(--color-muted);
   }
 }

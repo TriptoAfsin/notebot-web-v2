@@ -1,4 +1,58 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Pinned so the build can't drift when Netlify moves its image default.
+  # React 19 / Vite 5 / TypeScript 5.9 need a current LTS. Mirrors .nvmrc.
+  NODE_VERSION = "22"
+  # NODE_ENV is deliberately left unset. Setting it to "production" makes Netlify
+  # skip devDependencies — and typescript, vite, tailwindcss, postcss and
+  # autoprefixer all live there, so the build would die at `tsc`.
+
+# ---------------------------------------------------------------------------
+# SPA fallback. Real files are served first, so this only catches client routes.
+# ---------------------------------------------------------------------------
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+
+# ---------------------------------------------------------------------------
+# Caching
+#
+# Hashed build output is safe to cache forever; the HTML entry and the service
+# worker must not be. Without this the SW response gets cached and visitors stay
+# pinned to a stale worker that keeps serving an old build after a deploy — the
+# classic "my users are stuck on last week's version" PWA failure.
+# ---------------------------------------------------------------------------
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# ---------------------------------------------------------------------------
+# Baseline security headers
+# ---------------------------------------------------------------------------
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "SAMEORIGIN"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"

@@ -1,76 +1,61 @@
-import { Box } from "@/components/atoms/layout";
-import { TextEffect } from "@/components/atoms/typography/text-effect";
-import AnimatingContainer from "@/components/Layout/AnimatingContainer";
+/* Hallmark · macrostructure: Index-First · design-system: design.md */
+
+import NavigationLinkCard from "@/components/atoms/cards/navigation-link-card";
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Card, CardContent } from "@/components/ui/card";
+  ICON_HUE,
+  LabReportsIcon,
+  LevelIcon,
+} from "@/components/atoms/icons/dimensional";
+import PageMark from "@/components/molecules/page-mark";
+import {
+  Breadcrumbs,
+  IndexGrid,
+  PageShell,
+  PageTitle,
+  RevealItem,
+} from "@/components/molecules/page-shell";
+import { LEVELS } from "@/constants/content-config";
 import { APP_PATHS } from "@/constants/path-config";
-import { Link } from "react-router-dom";
-
-const levels = [
-  {
-    name: "🧒 Level 1",
-    href: APP_PATHS.LAB_REPORTS_LEVELS("1"),
-  },
-  {
-    name: "👦 Level 2",
-    href: APP_PATHS.LAB_REPORTS_LEVELS("2"),
-  },
-  {
-    name: "🧑 Level 3",
-    href: APP_PATHS.LAB_REPORTS_LEVELS("3"),
-  },
-  {
-    name: "🧑‍🎓 Level 4",
-    href: APP_PATHS.LAB_REPORTS_LEVELS("4"),
-  },
-];
-
-const LAB_REPORTS_ICON = "/icons/lab-report.png";
+import { labLevelQuery } from "@/hooks/networking/content/lab-report-level-details";
 
 export default function LabReportsPage() {
   return (
-    <Box className="container p-6 mx-auto">
-      <Breadcrumb className="mb-6">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href={APP_PATHS.HOME}>Home</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
+    <PageShell>
+      <Breadcrumbs
+        trail={[
+          { label: "Home", href: APP_PATHS.HOME },
+          { label: "Lab Reports" },
+        ]}
+      />
 
-          <BreadcrumbItem>
-            <BreadcrumbLink href={APP_PATHS.LAB_REPORTS}>
-              Lab Reports
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-      <TextEffect className="flex items-center mb-6 text-xl font-bold">
-        📙 Choose Level for Lab Reports
-      </TextEffect>
-      <AnimatingContainer animation="slideDown">
-        <Box className="grid gap-4 md:grid-cols-2">
-          {levels?.map((level, index) => (
-            <Link to={level.href} key={index}>
-              <Card className="transition-colors hover:bg-gray-100 dark:hover:bg-zinc-800">
-                <CardContent className="p-4">
-                  <Box className="flex items-center w-full text-xl text-left">
-                    <span className="mr-4 text-2xl">{level.name}</span>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </Box>
-      </AnimatingContainer>
-      <Box className="absolute bottom-24 right-5">
-        <img src={LAB_REPORTS_ICON} alt="Lab Reports" className="w-24 h-24" />
-      </Box>
-    </Box>
+      <PageTitle
+        icon={<LabReportsIcon className="h-8 w-8" />}
+        title="Choose a level"
+        meta="Lab reports, by level and subject"
+      />
+
+      <IndexGrid columns={2}>
+        {LEVELS.map((level, index) => (
+          <RevealItem key={level.level} index={index}>
+            <NavigationLinkCard
+              label={level.label}
+              path={APP_PATHS.LAB_REPORTS_LEVELS(String(level.level))}
+              prefetch={labLevelQuery(level.level)}
+              icon={
+                <LevelIcon
+                  className="h-9 w-9"
+                  count={level.count}
+                  hue={ICON_HUE.labs}
+                />
+              }
+            />
+          </RevealItem>
+        ))}
+      </IndexGrid>
+
+      <PageMark>
+        <LabReportsIcon className="h-24 w-24" />
+      </PageMark>
+    </PageShell>
   );
 }

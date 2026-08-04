@@ -1,87 +1,114 @@
-import { Box } from "@/components/atoms/layout";
+/* Hallmark · genre: modern-minimal · design-system: design.md · designed-as-app
+ *
+ * The shell. Route list and paths are unchanged; what changed:
+ *  - PersistQueryClientProvider restores the cache from localStorage on boot, so
+ *    a returning visitor sees their note tree immediately (and offline).
+ *  - Every route is lazy, not just four of them — the eager imports were pulling
+ *    all eleven browse pages into the initial bundle.
+ *  - <RouteTransition> handles the crossfade where the View Transitions API
+ *    isn't available.
+ */
+
 import Footer from "@/components/atoms/layout/footer";
 import Header from "@/components/atoms/layout/header";
-import { Spinner } from "@/components/atoms/spinner/spinner";
-import AboutPage from "@/pages/about";
-import FrontPage from "@/pages/front-page";
-import ResultsPage from "@/pages/results";
+import RouteTransition from "@/components/motion/route-transition";
+import { ThemeProvider } from "@/components/theme-provider";
+import { persistOptions, queryClient } from "@/lib/query-client";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import "./App.css";
 
-import LabReportsPage from "@/pages/lab-reports";
-import NotesPage from "@/pages/notes";
-import SyllabusBatch from "@/pages/syllabus/batch/syllabus-batch";
-import SyllabusDept from "@/pages/syllabus/dept/syllabus-dept";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import LabLevels from "./pages/lab-reports/levels/lab-levels";
-import LabSubjects from "./pages/lab-reports/subjects/lab-subjects";
-import LabTopics from "./pages/lab-reports/topics/lab-topics";
-import NoteLevels from "./pages/notes/levels/note-levels";
-import NoteSubjects from "./pages/notes/subjects/note-subjects";
-import NoteTopics from "./pages/notes/topics/note-topics";
+import RouteFallback from "@/components/molecules/route-fallback";
+import { APP_PATHS } from "@/constants/path-config";
 
-// Lazy load the QBankPage
+const FrontPage = lazy(() => import("@/pages/front-page"));
+const AboutPage = lazy(() => import("@/pages/about"));
+const NotesPage = lazy(() => import("@/pages/notes"));
+const NoteLevels = lazy(() => import("@/pages/notes/levels/note-levels"));
+const NoteSubjects = lazy(() => import("@/pages/notes/subjects/note-subjects"));
+const NoteTopics = lazy(() => import("@/pages/notes/topics/note-topics"));
+const LabReportsPage = lazy(() => import("@/pages/lab-reports"));
+const LabLevels = lazy(() => import("@/pages/lab-reports/levels/lab-levels"));
+const LabSubjects = lazy(
+  () => import("@/pages/lab-reports/subjects/lab-subjects")
+);
+const LabTopics = lazy(() => import("@/pages/lab-reports/topics/lab-topics"));
 const QBankPage = lazy(() => import("@/pages/q-bank"));
 const SyllabusPage = lazy(() => import("@/pages/syllabus"));
+const SyllabusBatch = lazy(() => import("@/pages/syllabus/batch/syllabus-batch"));
+const SyllabusDept = lazy(() => import("@/pages/syllabus/dept/syllabus-dept"));
+const ResultsPage = lazy(() => import("@/pages/results"));
 const JokesPage = lazy(() => import("@/pages/jokes"));
 const TexGptPage = lazy(() => import("@/pages/tex-gpt"));
-
-// Create a client
-const queryClient = new QueryClient();
-
-import { ThemeProvider } from "@/components/theme-provider";
 
 function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-      <BrowserRouter>
-        <QueryClientProvider client={queryClient}>
-          <Header />
-          <Box className="min-h-[calc(100vh-100px)]">
-            <Suspense fallback={<Spinner className={`text-[#377fcc]`} />}>
-              <Routes>
-                <Route path="/" element={<FrontPage />} />
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/q-bank" element={<QBankPage />} />
-                <Route path="/syllabus" element={<SyllabusPage />} />
-                <Route path="/results" element={<ResultsPage />} />
-                <Route path="/jokes" element={<JokesPage />} />
-                <Route path="/notes" element={<NotesPage />} />
-                <Route path="/notes/:level" element={<NoteLevels />} />
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={persistOptions}
+      >
+        <BrowserRouter>
+          {/* A flex column pins the footer to the bottom without the magic
+              `calc(100vh - 100px)` the shell used to carry — that number never
+              matched the real header + footer heights, which is where the strip
+              of dead space under the footer came from. */}
+          <div className="flex min-h-dvh flex-col">
+            <Header />
 
-                <Route
-                  path="/notes/:level/:subName"
-                  element={<NoteSubjects />}
-                />
-                <Route
-                  path="/notes/:level/:subName/:topic"
-                  element={<NoteTopics />}
-                />
+            <main className="flex-1">
+              <RouteTransition>
+                <Suspense fallback={<RouteFallback />}>
+                  <Routes>
+                  <Route path={APP_PATHS.HOME} element={<FrontPage />} />
+                  <Route path={APP_PATHS.ABOUT} element={<AboutPage />} />
 
-                <Route path="/lab-reports" element={<LabReportsPage />} />
-                <Route path="/lab-reports/:level" element={<LabLevels />} />
-                <Route
-                  path="/lab-reports/:level/:subName"
-                  element={<LabSubjects />}
-                />
-                <Route
-                  path="/lab-reports/:level/:subName/:topic"
-                  element={<LabTopics />}
-                />
+                  <Route path={APP_PATHS.NOTES} element={<NotesPage />} />
+                  <Route path="/notes/:level" element={<NoteLevels />} />
+                  <Route
+                    path="/notes/:level/:subName"
+                    element={<NoteSubjects />}
+                  />
+                  <Route
+                    path="/notes/:level/:subName/:topic"
+                    element={<NoteTopics />}
+                  />
 
-                <Route path="/syllabus/:batch" element={<SyllabusBatch />} />
-                <Route
-                  path="/syllabus/:batch/:dept"
-                  element={<SyllabusDept />}
-                />
-                <Route path="/tex-gpt" element={<TexGptPage />} />
-              </Routes>
-            </Suspense>
-          </Box>
-          <Footer />
-        </QueryClientProvider>
-      </BrowserRouter>
+                  <Route
+                    path={APP_PATHS.LAB_REPORTS}
+                    element={<LabReportsPage />}
+                  />
+                  <Route path="/lab-reports/:level" element={<LabLevels />} />
+                  <Route
+                    path="/lab-reports/:level/:subName"
+                    element={<LabSubjects />}
+                  />
+                  <Route
+                    path="/lab-reports/:level/:subName/:topic"
+                    element={<LabTopics />}
+                  />
+
+                  <Route path={APP_PATHS.QBANKS} element={<QBankPage />} />
+
+                  <Route path={APP_PATHS.SYLLABUS} element={<SyllabusPage />} />
+                  <Route path="/syllabus/:batch" element={<SyllabusBatch />} />
+                  <Route
+                    path="/syllabus/:batch/:dept"
+                    element={<SyllabusDept />}
+                  />
+
+                  <Route path={APP_PATHS.RESULTS} element={<ResultsPage />} />
+                    <Route path={APP_PATHS.JOKES} element={<JokesPage />} />
+                    <Route path={APP_PATHS.TEX_GPT} element={<TexGptPage />} />
+                  </Routes>
+                </Suspense>
+              </RouteTransition>
+            </main>
+
+            <Footer />
+          </div>
+        </BrowserRouter>
+      </PersistQueryClientProvider>
     </ThemeProvider>
   );
 }

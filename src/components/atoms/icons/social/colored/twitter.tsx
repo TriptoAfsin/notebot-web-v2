@@ -1,4 +1,4 @@
-export function TwitterIcon(props: React.SVGAttributes<{}>) {
+﻿export function TwitterIcon(props: React.SVGAttributes<SVGSVGElement>) {
   return (
     <svg
       fill="none"

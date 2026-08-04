@@ -1,32 +1,26 @@
 import { API_CONFIG } from "@/constants/api-config";
+import { getJson } from "@/lib/api-client";
+import { queryKeys } from "@/lib/query-keys";
 import { useQuery } from "@tanstack/react-query";
-import axios, { AxiosError } from "axios";
 
-type SyllabusItem = {
+export type SyllabusDeptItem = {
   dept: string;
   url?: string;
   route?: string;
 };
 
-type SyllabusBatchDetails = SyllabusItem[];
+export type SyllabusBatchDetails = SyllabusDeptItem[];
 
-const fetchSyllabus = async (
-  batch: number | string
-): Promise<SyllabusBatchDetails | null> => {
-  try {
-    const response = await axios.get(API_CONFIG.SYLLABUS_BATCH(batch));
-    return response?.data ?? null;
-  } catch (error) {
-    console.error("Error fetching batch wise syllabus details:", error);
-    throw error instanceof AxiosError
-      ? error
-      : new Error("An unexpected error occurred");
-  }
-};
+export const fetchBatchSyllabus = (batch: number | string) =>
+  getJson<SyllabusBatchDetails>(
+    API_CONFIG.SYLLABUS_BATCH(batch),
+    "loading the departments for this batch"
+  );
 
-export const useGetBatchSyllabus = (batch: number | string) => {
-  return useQuery<SyllabusBatchDetails | null, Error>({
-    queryKey: ["syllabus-batch", batch],
-    queryFn: () => fetchSyllabus(batch),
-  });
-};
+export const syllabusBatchQuery = (batch: number | string) => ({
+  queryKey: queryKeys.syllabus.batch(batch),
+  queryFn: () => fetchBatchSyllabus(batch),
+});
+
+export const useGetBatchSyllabus = (batch: number | string) =>
+  useQuery({ ...syllabusBatchQuery(batch), enabled: Boolean(batch) });

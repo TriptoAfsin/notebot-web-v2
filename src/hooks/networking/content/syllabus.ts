@@ -1,30 +1,22 @@
 import { API_CONFIG } from "@/constants/api-config";
+import { getJson } from "@/lib/api-client";
+import { queryKeys } from "@/lib/query-keys";
 import { useQuery } from "@tanstack/react-query";
-import axios, { AxiosError } from "axios";
 
-type SyllabusItem = {
+export type SyllabusBatchItem = {
   batch: string;
   url?: string;
   route?: string;
 };
 
-type NoteLevelDetails = SyllabusItem[];
+export type SyllabusRoot = SyllabusBatchItem[];
 
-const fetchSyllabus = async (): Promise<NoteLevelDetails | null> => {
-  try {
-    const response = await axios.get(API_CONFIG.SYLLABUS_ROOT);
-    return response?.data ?? null;
-  } catch (error) {
-    console.error("Error fetching syllabus details:", error);
-    throw error instanceof AxiosError
-      ? error
-      : new Error("An unexpected error occurred");
-  }
-};
+export const fetchSyllabus = () =>
+  getJson<SyllabusRoot>(API_CONFIG.SYLLABUS_ROOT, "loading the batch list");
 
-export const useGetSyllabus = () => {
-  return useQuery<NoteLevelDetails | null, Error>({
-    queryKey: ["syllabus"],
-    queryFn: () => fetchSyllabus(),
-  });
-};
+export const syllabusRootQuery = () => ({
+  queryKey: queryKeys.syllabus.root(),
+  queryFn: fetchSyllabus,
+});
+
+export const useGetSyllabus = () => useQuery(syllabusRootQuery());

@@ -1,28 +1,24 @@
 import { API_CONFIG } from "@/constants/api-config";
+import { getJson } from "@/lib/api-client";
+import { queryKeys, STALE_TIME } from "@/lib/query-keys";
 import { useQuery } from "@tanstack/react-query";
-import axios, { AxiosError } from "axios";
 
-type JokesDetails = {
+export type JokesDetails = {
   joke: string;
 };
 
-const fetchJokes = async (): Promise<JokesDetails> => {
-  try {
-    const response = await axios.get(API_CONFIG.JOKES, {
-      responseType: "text",
-    });
-    return { joke: response.data };
-  } catch (error) {
-    console.error("Error fetching jokes details:", error);
-    throw error instanceof AxiosError
-      ? error
-      : new Error("An unexpected error occurred");
-  }
+export const fetchJokes = async (): Promise<JokesDetails> => {
+  const joke = await getJson<string>(API_CONFIG.JOKES, "fetching a joke", {
+    responseType: "text",
+  });
+  return { joke };
 };
 
-export const useGetJokes = () => {
-  return useQuery<JokesDetails, Error>({
-    queryKey: ["jokes"],
-    queryFn: () => fetchJokes(),
+export const useGetJokes = () =>
+  useQuery({
+    queryKey: queryKeys.jokes(),
+    queryFn: fetchJokes,
+    // A new joke every time is the whole feature — never serve this from cache.
+    staleTime: STALE_TIME.volatile,
+    gcTime: 0,
   });
-};

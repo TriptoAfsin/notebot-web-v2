@@ -1,107 +1,88 @@
-import { Box } from "@/components/atoms/layout";
-import RootContentSkeleton from "@/components/atoms/skeletons/root-content-skeleton";
-import { Text } from "@/components/atoms/typography/text";
-import { TextEffect } from "@/components/atoms/typography/text-effect";
-import AnimatingContainer from "@/components/Layout/AnimatingContainer";
+/* Hallmark · macrostructure: Index-First · design-system: design.md
+ *
+ * The endpoint returns either a list of syllabus entries or a single bare object.
+ * That's normalised in the hook now, so this page renders one list — the old
+ * version duplicated the whole card markup across an `Array.isArray` branch.
+ */
+
+import NavigationLinkCard from "@/components/atoms/cards/navigation-link-card";
+import { SyllabusIcon } from "@/components/atoms/icons/dimensional";
+import { IndexGridSkeleton } from "@/components/atoms/skeletons";
+import EmptyState from "@/components/molecules/empty-state";
 import ErrorComponent from "@/components/molecules/error-comonent";
+import PageMark from "@/components/molecules/page-mark";
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Card, CardContent } from "@/components/ui/card";
+  Breadcrumbs,
+  IndexGrid,
+  PageShell,
+  PageTitle,
+  RevealItem,
+} from "@/components/molecules/page-shell";
 import { APP_PATHS } from "@/constants/path-config";
 import { useGetDeptSyllabus } from "@/hooks/networking/content/syllabus-dept";
-import { ExternalLink } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 export default function SyllabusDept() {
-  const { batch, dept } = useParams<{ batch: string; dept: string }>();
-  const { data, isLoading, error, refetch } = useGetDeptSyllabus(
-    batch as string,
-    dept as string
-  );
+  const { batch = "", dept = "" } = useParams<{
+    batch: string;
+    dept: string;
+  }>();
+  const { data, isPending, error, refetch } = useGetDeptSyllabus(batch, dept);
 
-  if (error) {
-    return (
-      <ErrorComponent
-        message="An error occurred while fetching syllabus."
-        refreshFunc={refetch}
-      />
-    );
-  }
+  const entries = data ?? [];
 
   return (
-    <Box className="container p-6 mx-auto">
-      <Breadcrumb className="mb-6">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href={APP_PATHS.HOME}>Home</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink href={APP_PATHS.SYLLABUS}>Syllabus</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink href={`${APP_PATHS.SYLLABUS}/${batch}`}>
-              {batch}
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink href={`${APP_PATHS.SYLLABUS}/${batch}/${dept}`}>
-              {dept?.toUpperCase()}
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-      <TextEffect className="flex items-center mb-6 text-xl font-bold">
-        📗 Choose Syllabus
-      </TextEffect>
-      <AnimatingContainer animation="slideDown">
-        {isLoading ? (
-          Array.from({ length: 6 }).map((_, index) => (
-            <RootContentSkeleton key={index} />
-          ))
-        ) : data && Array?.isArray(data) ? (
-          <Box className="grid gap-4 md:grid-cols-3">
-            {data.map((item, index) => (
-              <Link to={item?.url as string} key={index} target="_blank">
-                <Card className="transition-colors hover:bg-gray-100">
-                  <CardContent className="p-4">
-                    <Box className="flex items-center justify-between w-full text-xl text-left">
-                      <span className="mr-4 text-2xl">{item?.topic}</span>
-                      {item?.url && (
-                        <ExternalLink className="w-5 h-5 text-gray-500" />
-                      )}
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </Box>
-        ) : data && !Array?.isArray(data) ? (
-          <Link to={data?.url as string} target="_blank">
-            <Card className="transition-colors hover:bg-gray-100">
-              <CardContent className="p-4">
-                <Box className="flex items-center justify-between w-full text-xl text-left">
-                  <span className="mr-4 text-2xl">{data?.topic}</span>
-                  {data?.url && (
-                    <ExternalLink className="w-5 h-5 text-gray-500" />
-                  )}
-                </Box>
-              </CardContent>
-            </Card>
-          </Link>
-        ) : (
-          <Box>
-            <Text>No syllabus available.</Text>
-          </Box>
-        )}
-      </AnimatingContainer>
-    </Box>
+    <PageShell>
+      <Breadcrumbs
+        trail={[
+          { label: "Home", href: APP_PATHS.HOME },
+          { label: "Syllabus", href: APP_PATHS.SYLLABUS },
+          { label: `Batch ${batch}`, href: APP_PATHS.SYLLABUS_BATCH(batch) },
+          { label: dept.toUpperCase() },
+        ]}
+      />
+
+      <PageTitle
+        icon={<SyllabusIcon className="h-8 w-8" />}
+        title="Open the syllabus"
+        meta={
+          entries.length
+            ? `${dept.toUpperCase()} · ${entries.length} ${entries.length === 1 ? "entry" : "entries"}`
+            : dept.toUpperCase()
+        }
+      />
+
+      {error ? (
+        <ErrorComponent
+          message="Couldn't load this syllabus"
+          refreshFunc={() => refetch()}
+        />
+      ) : isPending ? (
+        <IndexGridSkeleton rows={3} columns={3} withIcon label="Loading syllabus" />
+      ) : entries.length === 0 ? (
+        <EmptyState
+          title="No syllabus published"
+          hint="Nothing has been uploaded for this department yet."
+        />
+      ) : (
+        <IndexGrid columns={3}>
+          {entries.map((item, index) => (
+            <RevealItem key={`${item.topic}-${index}`} index={index}>
+              <NavigationLinkCard
+                label={item.topic}
+                url={item.url}
+                path={item.url ?? "#"}
+                isExternal={Boolean(item.url)}
+                icon={<SyllabusIcon className="h-8 w-8" />}
+              />
+            </RevealItem>
+          ))}
+        </IndexGrid>
+      )}
+
+      <PageMark>
+        <SyllabusIcon className="h-24 w-24" />
+      </PageMark>
+    </PageShell>
   );
 }

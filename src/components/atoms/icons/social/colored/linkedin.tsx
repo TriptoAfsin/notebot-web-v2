@@ -1,4 +1,4 @@
-export function LinkedinIcon(props: React.SVGAttributes<{}>) {
+﻿export function LinkedinIcon(props: React.SVGAttributes<SVGSVGElement>) {
   return (
     <svg
       width="24"

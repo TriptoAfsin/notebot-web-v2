@@ -1,84 +1,100 @@
+/* Hallmark · macrostructure: Index-First · design-system: design.md
+ *
+ * The batch is read from useParams() rather than `pathname.split("/").pop()`.
+ * A row was also previously marked external when the *department* carried a url,
+ * while still routing to an internal path — so it opened the in-app page with a
+ * new-tab affordance on it. External rows now actually go to the url.
+ */
+
 import NavigationLinkCard from "@/components/atoms/cards/navigation-link-card";
-import { Box } from "@/components/atoms/layout";
-import RootContentSkeleton from "@/components/atoms/skeletons/root-content-skeleton";
-import { Text } from "@/components/atoms/typography/text";
-import { TextEffect } from "@/components/atoms/typography/text-effect";
-import AnimatingContainer from "@/components/Layout/AnimatingContainer";
+import { FolderIcon, ICON_HUE, SyllabusIcon } from "@/components/atoms/icons/dimensional";
+import { IndexGridSkeleton } from "@/components/atoms/skeletons";
+import EmptyState from "@/components/molecules/empty-state";
 import ErrorComponent from "@/components/molecules/error-comonent";
+import PageMark from "@/components/molecules/page-mark";
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+  Breadcrumbs,
+  IndexGrid,
+  PageShell,
+  PageTitle,
+  RevealItem,
+} from "@/components/molecules/page-shell";
 import { APP_PATHS } from "@/constants/path-config";
 import { useGetBatchSyllabus } from "@/hooks/networking/content/syllabus-batch";
-import { useLocation } from "react-router-dom";
+import { syllabusDeptQuery } from "@/hooks/networking/content/syllabus-dept";
+import { useParams } from "react-router-dom";
 
 export default function SyllabusBatch() {
-  const location = useLocation();
-  // Extract batch from the URL path
-  const batch = location.pathname.split("/").pop();
+  const { batch = "" } = useParams<{ batch: string }>();
+  const { data, isPending, error, refetch } = useGetBatchSyllabus(batch);
 
-  const { data, isLoading, error, refetch } = useGetBatchSyllabus(
-    batch as string
-  );
-
-  if (error) {
-    return (
-      <ErrorComponent
-        message="An error occurred while fetching syllabus."
-        refreshFunc={refetch}
-      />
-    );
-  }
+  const departments = Array.isArray(data) ? data : [];
 
   return (
-    <Box className="container p-6 mx-auto">
-      <Breadcrumb className="mb-6">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href={APP_PATHS.HOME}>Home</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
+    <PageShell>
+      <Breadcrumbs
+        trail={[
+          { label: "Home", href: APP_PATHS.HOME },
+          { label: "Syllabus", href: APP_PATHS.SYLLABUS },
+          { label: `Batch ${batch}` },
+        ]}
+      />
 
-          <BreadcrumbItem>
-            <BreadcrumbLink href={APP_PATHS.SYLLABUS}>Syllabus</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink>{`Batch ${batch}`}</BreadcrumbLink>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-      <TextEffect className="flex items-center mb-6 text-xl font-bold">
-        📗 Choose Syllabus
-      </TextEffect>
-      <AnimatingContainer animation="slideDown">
-        {isLoading ? (
-          Array.from({ length: 6 }).map((_, index) => (
-            <RootContentSkeleton key={index} />
-          ))
-        ) : data ? (
-          <Box className="grid gap-4 md:grid-cols-3">
-            {data.map((item, index) => (
-              <NavigationLinkCard
-                label={item.dept}
-                key={index}
-                path={`${
-                  APP_PATHS.SYLLABUS
-                }/${batch}/${item?.dept?.toLowerCase()}`}
-                isExternal={item?.url ? true : false}
-              />
-            ))}
-          </Box>
-        ) : (
-          <Box>
-            <Text>No syllabus available.</Text>
-          </Box>
-        )}
-      </AnimatingContainer>
-    </Box>
+      <PageTitle
+        icon={<SyllabusIcon className="h-8 w-8" />}
+        title="Choose a department"
+        meta={
+          departments.length
+            ? `Batch ${batch} · ${departments.length} departments`
+            : `Batch ${batch}`
+        }
+      />
+
+      {error ? (
+        <ErrorComponent
+          message={`Couldn't load the departments for batch ${batch}`}
+          refreshFunc={() => refetch()}
+        />
+      ) : isPending ? (
+        <IndexGridSkeleton
+          rows={6}
+          columns={3}
+          withIcon
+          label="Loading departments"
+        />
+      ) : departments.length === 0 ? (
+        <EmptyState
+          title="No departments listed"
+          hint="Nothing has been published for this batch yet."
+        />
+      ) : (
+        <IndexGrid columns={3}>
+          {departments.map((item, index) => {
+            const dept = item?.dept?.toLowerCase() ?? "";
+            const isExternal = Boolean(item?.url);
+            return (
+              <RevealItem key={`${dept}-${index}`} index={index}>
+                <NavigationLinkCard
+                  label={item.dept}
+                  url={item?.url}
+                  path={APP_PATHS.SYLLABUS_BATCH_DEPT(batch, dept)}
+                  isExternal={isExternal}
+                  icon={
+                    <FolderIcon className="h-8 w-8" hue={ICON_HUE.syllabus} />
+                  }
+                  prefetch={
+                    isExternal ? undefined : syllabusDeptQuery(batch, dept)
+                  }
+                />
+              </RevealItem>
+            );
+          })}
+        </IndexGrid>
+      )}
+
+      <PageMark>
+        <SyllabusIcon className="h-24 w-24" />
+      </PageMark>
+    </PageShell>
   );
 }

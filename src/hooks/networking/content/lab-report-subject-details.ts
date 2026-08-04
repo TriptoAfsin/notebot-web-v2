@@ -1,38 +1,36 @@
 import { API_CONFIG } from "@/constants/api-config";
+import { getJson } from "@/lib/api-client";
+import { queryKeys } from "@/lib/query-keys";
 import { useQuery } from "@tanstack/react-query";
-import axios, { AxiosError } from "axios";
 
-type LabReportLevelItem = {
+export type LabSubjectItem = {
   topic: string;
   url?: string;
   route?: string;
 };
 
-type LabReportLevelDetails = LabReportLevelItem[];
+export type LabSubjectDetails = LabSubjectItem[];
 
-const fetchLabReportSubjectDetails = async (
+export const fetchLabReportSubjectDetails = (
   level: number | string,
   subject: string
-): Promise<LabReportLevelDetails | null> => {
-  try {
-    const response = await axios.get(
-      API_CONFIG.LAB_REPORTS_SUBJECT_DETAILS(level, subject)
-    );
-    return response?.data ?? null;
-  } catch (error) {
-    console.error("Error fetching lab report subject details:", error);
-    throw error instanceof AxiosError
-      ? error
-      : new Error("An unexpected error occurred");
-  }
-};
+) =>
+  getJson<LabSubjectDetails>(
+    API_CONFIG.LAB_REPORTS_SUBJECT_DETAILS(level, subject),
+    "loading the topics for this subject"
+  );
+
+export const labSubjectQuery = (level: number | string, subject: string) => ({
+  // Keyed on level *and* subject — the old subject-only key collided across levels.
+  queryKey: queryKeys.labs.subject(level, subject),
+  queryFn: () => fetchLabReportSubjectDetails(level, subject),
+});
 
 export const useGetLabReportSubjectDetails = (
   level: number | string,
   subject: string
-) => {
-  return useQuery<LabReportLevelDetails | null, Error>({
-    queryKey: ["labReportSubjectDetails", subject],
-    queryFn: () => fetchLabReportSubjectDetails(level, subject),
+) =>
+  useQuery({
+    ...labSubjectQuery(level, subject),
+    enabled: Boolean(level && subject),
   });
-};

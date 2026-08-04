@@ -1,41 +1,65 @@
+/* Hallmark · footer: Ft2 inline single line · design-system: design.md
+ *
+ * Same three pieces of information as before, in the same left/right split, but
+ * on the paper ramp with a hairline rule above instead of a grey slab. The band
+ * was a 40px sliver; it now carries real vertical rhythm, and the shell's flex
+ * column means there's no dead strip beneath it.
+ */
+
 import { APP_CONFIG } from "@/constants/app-config";
-import { Link } from "react-router-dom";
-import { Text } from "../typography/text";
-import { Box } from "./box";
+import { cn } from "@/lib/utils";
 
 const PALESTINE_FLAG = "/icons/palestine-flag.png";
 
 export default function Footer() {
   return (
-    <footer className="text-gray-600 body-font dark:text-white">
-      <Box className="bg-gray-100 dark:bg-zinc-800">
-        <Box className="container flex flex-col flex-wrap px-5 py-4 mx-auto sm:flex-row">
-          <Text className="text-sm text-center text-gray-500 dark:text-white sm:text-left">
-            © {new Date().getFullYear()} {APP_CONFIG.name}
-          </Text>
+    <footer className="mt-2xl border-t border-rule bg-paper-2">
+      <div
+        className={cn(
+          "container flex flex-col items-center gap-md px-md py-lg md:px-lg",
+          "sm:flex-row sm:justify-between sm:gap-lg"
+        )}
+      >
+        <p className="label-mono order-2 sm:order-1">
+          © <span className="tabular">{new Date().getFullYear()}</span>{" "}
+          {APP_CONFIG.name}
+        </p>
 
-          <Box
-            as="span"
-            className="inline-flex items-center justify-center mt-2 sm:ml-auto sm:mt-0 sm:justify-start"
+        <div
+          className={cn(
+            "order-1 flex flex-col items-center gap-sm text-center",
+            "sm:order-2 sm:flex-row sm:gap-md sm:text-left"
+          )}
+        >
+          <a
+            href={APP_CONFIG.founder.web}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="affordance link-accent text-sm font-medium"
           >
-            <Box className="flex flex-col items-center sm:items-start">
-              <Link to={APP_CONFIG.founder.web} target="_blank">
-                <Text>Made with ❤️ by {APP_CONFIG.founder.name}</Text>
-              </Link>
-              <Box className="flex items-center justify-center gap-2 mt-2">
-                <Text className="text-sm text-center text-gray-500 dark:text-white ">
-                  Solidarity with Palestine
-                </Text>
-                <img
-                  src={PALESTINE_FLAG}
-                  alt="Palestine Flag"
-                  className="w-6 h-6"
-                />
-              </Box>
-            </Box>
-          </Box>
-        </Box>
-      </Box>
+            Built by {APP_CONFIG.founder.name}
+          </a>
+
+          {/* hairline divider, desktop only — the stack carries the split on mobile */}
+          <span
+            aria-hidden="true"
+            className="hidden h-4 w-px bg-rule-2 sm:block"
+          />
+
+          <span className="flex items-center gap-xs text-sm text-muted-foreground">
+            Solidarity with Palestine
+            <img
+              src={PALESTINE_FLAG}
+              alt="Flag of Palestine"
+              width={20}
+              height={14}
+              loading="lazy"
+              decoding="async"
+              className="h-3.5 w-5 rounded-[2px] object-cover"
+            />
+          </span>
+        </div>
+      </div>
     </footer>
   );
 }
