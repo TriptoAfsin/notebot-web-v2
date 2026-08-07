@@ -20,6 +20,8 @@ import { labLevelQuery } from "@/hooks/networking/content/lab-report-level-detai
 import { noteLevelQuery } from "@/hooks/networking/content/note-level-details";
 import { syllabusRootQuery } from "@/hooks/networking/content/syllabus";
 import { staggerStyle } from "@/lib/motion";
+import { preloadRoutesWhenIdle } from "@/lib/route-chunks";
+import { useEffect } from "react";
 
 /* Hovering a tile warms the page behind it, so the first browse screen usually
  * paints from cache. Only the routes that fetch on mount are listed. */
@@ -34,8 +36,19 @@ function itemsIn(section: LauncherSection) {
   return LAUNCHER_ITEMS.filter(item => item.section === section);
 }
 
+/** The launcher's own destinations — every tile that stays in the app. */
+const INTERNAL_TILE_PATHS = LAUNCHER_ITEMS.filter(item => !item.isExternal).map(
+  item => item.href
+);
+
 export default function FrontPage() {
   let revealIndex = 0;
+
+  /* Hover warms a tile on a desktop, but a phone has no hover and the gap
+   * between touchstart and click is far too short to cover a cold fetch. Since
+   * this screen exists to send you somewhere else, warm its destinations as soon
+   * as the browser is idle. Skipped under Data Saver and on 2G. */
+  useEffect(() => preloadRoutesWhenIdle(INTERNAL_TILE_PATHS), []);
 
   return (
     <div className="mx-auto w-full max-w-5xl px-md pb-2xl pt-xl md:px-lg">

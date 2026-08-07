@@ -1,3 +1,4 @@
+import { preloadRoute } from "@/lib/route-chunks";
 import { cn } from "@/lib/utils";
 import { STALE_TIME } from "@/lib/query-keys";
 import { useQueryClient, type QueryKey } from "@tanstack/react-query";
@@ -30,7 +31,17 @@ const AppLink = forwardRef<HTMLAnchorElement, AppLinkProps>(function AppLink(
 ) {
   const queryClient = useQueryClient();
 
+  /**
+   * Warm the destination on intent — both halves of it.
+   *
+   * The route's JS chunk matters as much as its data: without it, react-router 7
+   * navigates inside a transition, React holds the current screen while the
+   * chunk downloads, and the URL changes seconds before the UI does. Preloading
+   * happens for every internal link, with or without a `prefetch` descriptor.
+   */
   const warm = useCallback(() => {
+    preloadRoute(to);
+
     if (!prefetch) return;
     // prefetchQuery is a no-op when the entry is already fresh, so repeated
     // hovers over the same row cost nothing.
@@ -38,7 +49,7 @@ const AppLink = forwardRef<HTMLAnchorElement, AppLinkProps>(function AppLink(
       ...prefetch,
       staleTime: STALE_TIME.content,
     });
-  }, [prefetch, queryClient]);
+  }, [prefetch, queryClient, to]);
 
   if (external) {
     return (
@@ -63,9 +74,11 @@ const AppLink = forwardRef<HTMLAnchorElement, AppLinkProps>(function AppLink(
       // exists; RouteTransition covers the fallback path.
       viewTransition
       className={cn("block", className)}
-      onMouseEnter={prefetch ? warm : undefined}
-      onFocus={prefetch ? warm : undefined}
-      onTouchStart={prefetch ? warm : undefined}
+      // Unconditional now: the chunk preload applies to every internal link,
+      // not just the ones that were given a query to warm.
+      onMouseEnter={warm}
+      onFocus={warm}
+      onTouchStart={warm}
       {...rest}
     >
       {children}
