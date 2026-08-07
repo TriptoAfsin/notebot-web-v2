@@ -37,7 +37,20 @@ export default defineConfig({
          * precache manifest past 11 MB, which a student on mobile data was
          * downloading before the app would even open. Route chunks are cached at
          * runtime instead, the first time they're actually visited. */
-        globPatterns: ["**/*.{css,html,ico,png,svg,webmanifest}", "assets/index-*.js"],
+        /* PNGs are named individually instead of swept with a recursive glob.
+         * The old catch-all pulled in every PNG under public/ — including 1.1 MB
+         * of icons left over from before the launcher moved to SVG glyphs, which
+         * every install downloaded and nothing ever rendered. Naming them also
+         * means a PNG dropped into public/ tomorrow can't silently join the
+         * precache. Store screenshots (ss-1, ss-2) stay out on purpose: the
+         * install UI fetches those on demand, the app never displays them. */
+        globPatterns: [
+          "**/*.{css,html,ico,svg,webmanifest,woff2,webp}",
+          "assets/index-*.js",
+          "pwa-*.png",
+          "apple-touch-icon-*.png",
+          "maskable-icon-*.png",
+        ],
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         runtimeCaching: [
           {
@@ -46,33 +59,15 @@ export default defineConfig({
             handler: "StaleWhileRevalidate",
             options: { cacheName: `notebot-scripts-${RUNTIME_CACHE}` },
           },
-          {
-            urlPattern: /^https:\/\/api\.fontshare\.com\//,
-            handler: "CacheFirst",
-            options: {
-              cacheName: `notebot-fontshare-${RUNTIME_CACHE}`,
-              expiration: { maxEntries: 12, maxAgeSeconds: 60 * 60 * 24 * 365 },
-            },
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\//,
-            handler: "CacheFirst",
-            options: {
-              cacheName: `notebot-fonts-${RUNTIME_CACHE}`,
-              expiration: { maxEntries: 24, maxAgeSeconds: 60 * 60 * 24 * 365 },
-            },
-          },
+          /* The fontshare and fonts.gstatic.com rules are gone: the fonts are
+           * self-hosted now, so they're same-origin and precached by the woff2
+           * glob above. Nothing requests those hosts any more. */
         ],
       },
-      includeAssets: [
-        "favicon.ico",
-        "apple-touch-icon.png",
-        "mask-icon.svg",
-        "logo.png",
-        "icon.png",
-        "icons/*.png",
-        "images/*.png",
-      ],
+      /* `includeAssets` is gone rather than fixed. Every entry it listed was
+       * either a file that doesn't exist (mask-icon.svg, logo.png, images/*.png,
+       * apple-touch-icon.png — the real one is apple-touch-icon-180x180.png) or
+       * one globPatterns above already picks up. */
       manifest: {
         name: "NoteBot Web",
         short_name: "NoteBot Web",
@@ -80,13 +75,10 @@ export default defineConfig({
           "NoteBOT is the flagship educational platform for BUTEX and it's related students",
         theme_color: "#ffffff",
         screenshots: [
-          {
-            src: "ss-wide.png",
-            sizes: "1253x669",
-            type: "image/png",
-            form_factor: "wide",
-            label: "NoteBot Dashboard Desktop",
-          },
+          /* The `wide` form_factor entry pointed at ss-wide.png, which isn't in
+           * public/ — Chrome logs a manifest error and drops the whole richer
+           * install UI. Removed rather than left broken; add a real 1253x669
+           * capture and it can come back. */
           {
             src: "ss-1.png",
             sizes: "345x747",

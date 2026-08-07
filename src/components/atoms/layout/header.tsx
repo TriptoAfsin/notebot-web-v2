@@ -21,7 +21,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { APP_CONFIG, APP_HEADER_MENU } from "@/constants/app-config";
+import { APP_HEADER_MENU } from "@/constants/app-config";
 import { useGetPlatformStatus } from "@/hooks/networking/content/status";
 import { cn } from "@/lib/utils";
 import { Search } from "lucide-react";
@@ -68,7 +68,7 @@ function Header() {
             : "bg-paper"
         )}
       >
-        <BrandLogo className="mr-auto block h-10 w-10" />
+        <BrandLogo className="mr-auto block h-10 w-10" width={40} height={40} />
 
         {/* N13: the pill is visible for newcomers, the shortcut is for everyone
             else. Below sm it collapses to the icon alone. */}
@@ -118,7 +118,6 @@ function Header() {
               <div className="pr-12">
                 <BrandLogo
                   className="h-16 w-16"
-                  logo={APP_CONFIG.logoIcon}
                   width={64}
                   height={64}
                   onNavigate={handleCloseSheet}

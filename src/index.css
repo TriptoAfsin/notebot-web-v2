@@ -4,10 +4,17 @@
  * pre-emit critique: P5 H5 E5 S4 R5 V4
  */
 
-/* Display: Satoshi (Fontshare) — geometric, tight, confident.
- * Body: Geist + Mono: JetBrains Mono (Google Fonts). */
-@import url("https://api.fontshare.com/v2/css?f[]=satoshi@700,500&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap");
+/* Display: Satoshi. Body: Geist. Mono: JetBrains Mono — all self-hosted.
+ *
+ * These were two remote @import rules, which put fonts.googleapis.com and
+ * api.fontshare.com on the critical path behind this very file: the browser had
+ * to fetch and parse index.css before it could discover either stylesheet, fetch
+ * those, and only then start on the font files. Chrome measured 980ms of
+ * render-blocking time for the Google request alone.
+ *
+ * fonts.css is a local import, so Vite inlines it into this bundle — same bytes,
+ * no extra request, no third party. See src/fonts.css for the licence note. */
+@import "./fonts.css";
 
 @tailwind base;
 @tailwind components;

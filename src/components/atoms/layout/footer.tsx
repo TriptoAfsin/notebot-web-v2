@@ -11,7 +11,11 @@ import { APP_CONFIG } from "@/constants/app-config";
 import { APP_PATHS } from "@/constants/path-config";
 import { cn } from "@/lib/utils";
 
-const PALESTINE_FLAG = "/icons/palestine-flag.png";
+/* Drawn at 20x14. The source was a 512px PNG at 6.1 KiB — every byte of it
+ * wasted on a flag the size of a word. 460 B at 1x, 622 B at 2x. */
+const PALESTINE_FLAG = "/icons/palestine-flag-40.webp";
+const PALESTINE_FLAG_SRCSET =
+  "/icons/palestine-flag-40.webp 40w, /icons/palestine-flag-80.webp 80w";
 
 const LEGAL_LINKS = [
   { label: "Privacy", href: APP_PATHS.PRIVACY },
@@ -83,6 +87,8 @@ export default function Footer() {
             Solidarity with Palestine
             <img
               src={PALESTINE_FLAG}
+              srcSet={PALESTINE_FLAG_SRCSET}
+              sizes="20px"
               alt="Flag of Palestine"
               width={20}
               height={14}

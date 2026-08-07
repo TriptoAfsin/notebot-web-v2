@@ -10,7 +10,6 @@ import {
 
 export const APP_CONFIG = {
   name: "NoteBot Web",
-  logoIcon: "/notebot-web.png",
   colorPrimary: "#377fcc",
   colorSecondary: "#000000",
   appLink: "https://play.google.com/store/apps/details?id=com.hawkers.notebot",

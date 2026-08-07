@@ -2,7 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/notebot-web.png" />
+    <!-- was type="image/svg+xml" pointing at a 512px 50 KiB PNG: the wrong MIME
+         type, and 50 KiB to draw a 16px tab icon -->
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" type="image/png" href="/pwa-64x64.png" sizes="64x64" />
     <!-- viewport-fit=cover so env(safe-area-inset-*) resolves in the installed
          PWA, where the app draws under the system bars -->
     <meta
@@ -20,6 +23,25 @@
       content="#111318"
     />
     <title>NoteBot Web</title>
+    <!-- The two faces on nearly every screen: headings and body. Discovered here
+         rather than midway through parsing the CSS that references them, so they
+         download in parallel with it. `crossorigin` is required even same-origin
+         — fonts are fetched in CORS mode, and without it the preload is ignored
+         and fetched a second time. -->
+    <link
+      rel="preload"
+      href="/fonts/satoshi-700-all.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/geist-400-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="NoteBOT Web" />
