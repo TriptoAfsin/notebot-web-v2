@@ -23,6 +23,21 @@
       content="#111318"
     />
     <title>NoteBot Web</title>
+    <!-- The brand mark is the LCP element on the launcher, and it lives inside a
+         lazily-loaded route chunk — Lighthouse reported it as not discoverable in
+         the initial document, so the browser couldn't start it until HTML → entry
+         JS → route chunk → render had all completed. Preloading it here collapses
+         that chain. Never wasted: the same mark is the header logo on every
+         route. -->
+    <link
+      rel="preload"
+      href="/notebot-web-96.webp"
+      as="image"
+      type="image/webp"
+      imagesrcset="/notebot-web-96.webp 96w, /notebot-web-192.webp 192w"
+      imagesizes="96px"
+      fetchpriority="high"
+    />
     <!-- The two faces on nearly every screen: headings and body. Discovered here
          rather than midway through parsing the CSS that references them, so they
          download in parallel with it. `crossorigin` is required even same-origin

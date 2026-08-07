@@ -19,6 +19,20 @@ import {
 } from "@/components/atoms/skeletons";
 import { cn } from "@/lib/utils";
 
+/**
+ * Tiles per launcher section — Study, then Extras (see LAUNCHER_ITEMS in
+ * constants/content-config).
+ *
+ * These counts are load-bearing, not decorative. The skeleton first drew a single
+ * 10-tile grid while the real launcher draws two labelled sections, so when the
+ * page arrived the footer jumped and Lighthouse charged 0.044 of layout shift for
+ * it. Matching the structure is the entire job of a skeleton; getting the shape
+ * wrong makes it worse than none. Kept as literals rather than imported because
+ * content-config pulls in the whole dimensional glyph set, which would land in
+ * the entry bundle.
+ */
+const HOME_SECTION_TILES = [7, 3];
+
 function Bar({ className }: { className?: string }) {
   return <span className={cn("skeleton block h-3.5", className)} />;
 }
@@ -85,13 +99,22 @@ export default function RouteSkeleton({ pathname }: { pathname: string }) {
   if (shape === "home") {
     return (
       <div className="mx-auto w-full max-w-5xl px-md pb-2xl pt-xl md:px-lg">
-        <div className="flex flex-col items-center gap-sm">
+        <div className="flex flex-col items-center">
           <span className="skeleton h-24 w-24 rounded-card" />
-          <Bar className="h-5 w-40" />
+          {/* h-7 ≈ the 27px line box of the text-xl wordmark it stands in for */}
+          <Bar className="mt-sm h-7 w-40" />
         </div>
-        <div className="mt-xl">
-          <TileGridSkeleton />
-        </div>
+
+        {HOME_SECTION_TILES.map((tiles, index) => (
+          <section key={index} className="mt-xl">
+            <div className="mb-md flex items-center gap-sm">
+              {/* h-4 ≈ the 16px line box of a label-mono heading */}
+              <Bar className="h-4 w-14" />
+              <span aria-hidden="true" className="h-px flex-1 bg-rule" />
+            </div>
+            <TileGridSkeleton tiles={tiles} />
+          </section>
+        ))}
       </div>
     );
   }

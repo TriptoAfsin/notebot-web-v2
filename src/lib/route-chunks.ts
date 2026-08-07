@@ -108,6 +108,19 @@ export function isRouteWarm(pathname: string): boolean {
   return !!name && resolved.has(name);
 }
 
+/**
+ * Routes that are too expensive to fetch on spec.
+ *
+ * Tex-GPT drags in the markdown renderer and its highlighter — measured at about
+ * 260 KiB on top of its own page chunk, against 1–2 KiB for a browse page. Idle
+ * warming everything on the launcher was quietly downloading all of that for
+ * visitors who only wanted their notes.
+ *
+ * This only gates SPECULATIVE warming. Hover, focus and touchstart still preload
+ * it: by then there's real intent and the fetch is about to be needed anyway.
+ */
+const TOO_HEAVY_TO_GUESS: ReadonlySet<ChunkName> = new Set(["texGpt"]);
+
 type SavingConnection = {
   saveData?: boolean;
   effectiveType?: string;
@@ -128,9 +141,9 @@ function shouldSkipSpeculativeWork(): boolean {
  *
  * Hover and focus cover the pointer; this covers touch, where there is no hover
  * and the ~100ms between touchstart and click is far too short to hide a cold
- * fetch. The chunks involved are tiny — the browse pages are a few hundred bytes
- * each over a shared implementation — so this is nothing like the 11 MB precache
- * the service worker deliberately avoids.
+ * fetch. The browse pages are a few hundred bytes each over a shared
+ * implementation, so warming them is close to free — but anything in
+ * TOO_HEAVY_TO_GUESS is left for a real gesture to ask for.
  *
  * Returns a cancel function.
  */
@@ -139,7 +152,12 @@ export function preloadRoutesWhenIdle(paths: readonly string[]): () => void {
     return () => {};
   }
 
-  const warmAll = () => paths.forEach(preloadRoute);
+  const cheap = paths.filter(path => {
+    const name = chunkFor(path);
+    return name && !TOO_HEAVY_TO_GUESS.has(name);
+  });
+
+  const warmAll = () => cheap.forEach(preloadRoute);
 
   // requestIdleCallback is still missing in Safari; the timeout is the fallback.
   if (typeof window.requestIdleCallback === "function") {
