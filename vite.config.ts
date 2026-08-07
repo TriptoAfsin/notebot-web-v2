@@ -4,13 +4,33 @@ import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 import tsconfigPaths from "vite-tsconfig-paths";
 
+/* Runtime cache generation.
+ *
+ * The precache needs no version: its entries are content-hashed per build and
+ * Workbox's cleanupOutdatedCaches prunes the previous revision on activation.
+ * The runtime caches below are the opposite — they're keyed by a fixed name and
+ * survive every deploy, so this is the one lever that forces them to be rebuilt.
+ *
+ * Bump it to hand every client empty runtime caches on their next visit. Note
+ * that the superseded caches are orphaned rather than deleted (cleanupOutdated-
+ * Caches only touches precaches); the browser evicts them under quota pressure.
+ */
+const RUNTIME_CACHE = "v2";
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     tsconfigPaths({ root: __dirname }),
     react(),
     VitePWA({
-      registerType: "autoUpdate",
+      /* "prompt", not "autoUpdate": a new build installs and waits, and
+       * <PwaUpdatePrompt> lets the visitor apply it. autoUpdate swapped the
+       * worker out mid-session, which can hand a running page chunks from a
+       * build its HTML doesn't match.
+       *
+       * The retired-domain kill switch is unaffected — public/sw-kill.js calls
+       * skipWaiting() itself rather than relying on the page to trigger it. */
+      registerType: "prompt",
       workbox: {
         /* Precache the shell, not the long tail. The default glob swept up every
          * lazily-split chunk — including the Shiki grammars — and pushed the
@@ -24,13 +44,13 @@ export default defineConfig({
             // route + vendor chunks: serve instantly, refresh in the background
             urlPattern: ({ request }) => request.destination === "script",
             handler: "StaleWhileRevalidate",
-            options: { cacheName: "notebot-scripts" },
+            options: { cacheName: `notebot-scripts-${RUNTIME_CACHE}` },
           },
           {
             urlPattern: /^https:\/\/api\.fontshare\.com\//,
             handler: "CacheFirst",
             options: {
-              cacheName: "notebot-fontshare",
+              cacheName: `notebot-fontshare-${RUNTIME_CACHE}`,
               expiration: { maxEntries: 12, maxAgeSeconds: 60 * 60 * 24 * 365 },
             },
           },
@@ -38,7 +58,7 @@ export default defineConfig({
             urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\//,
             handler: "CacheFirst",
             options: {
-              cacheName: "notebot-fonts",
+              cacheName: `notebot-fonts-${RUNTIME_CACHE}`,
               expiration: { maxEntries: 24, maxAgeSeconds: 60 * 60 * 24 * 365 },
             },
           },

@@ -18,6 +18,7 @@ import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
+import PwaUpdatePrompt from "@/components/molecules/pwa-update-prompt";
 import RouteFallback from "@/components/molecules/route-fallback";
 import { APP_PATHS } from "@/constants/path-config";
 
@@ -114,6 +115,10 @@ function App() {
             </main>
 
             <Footer />
+
+            {/* Fixed to the viewport, so it sits outside the flex flow and can't
+                shift page layout when it appears. */}
+            <PwaUpdatePrompt />
           </div>
         </BrowserRouter>
       </PersistQueryClientProvider>

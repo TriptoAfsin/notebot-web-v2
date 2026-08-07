@@ -18,16 +18,21 @@ import type { ReactNode } from "react";
 const LAST_UPDATED = "August 7, 2026";
 
 const CLARITY_PRIVACY = "https://privacy.microsoft.com/privacystatement";
-const NETLIFY_PRIVACY = "https://www.netlify.com/privacy/";
 
-/** Inline external link, matching the prose treatment. */
+/**
+ * Inline external link, matching the prose treatment.
+ *
+ * `link-accent` alone — pairing it with Tailwind's `text-accent` paints the text
+ * in `--accent`, which in this system is `--c-paper-3`, a surface token. That
+ * rendered links all but invisible against the dark page.
+ */
 function Out({ href, children }: { href: string; children: ReactNode }) {
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="link-accent text-accent"
+      className="link-accent"
     >
       {children}
     </a>
@@ -112,20 +117,6 @@ const SECTIONS: readonly LegalSection[] = [
           notebook.
         </p>
       </>
-    ),
-  },
-  {
-    heading: "Hosting and server logs",
-    body: (
-      <p>
-        The site is served by Netlify and the content API runs on our own
-        infrastructure. Like any web server, both receive standard request
-        information — IP address, timestamp, requested URL, browser user agent —
-        which is used to serve the request, keep the service available and
-        investigate abuse or outages. See the{" "}
-        <Out href={NETLIFY_PRIVACY}>Netlify privacy notice</Out> for their
-        handling.
-      </p>
     ),
   },
   {

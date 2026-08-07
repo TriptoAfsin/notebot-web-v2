@@ -11,6 +11,44 @@
   # autoprefixer all live there, so the build would die at `tsc`.
 
 # ---------------------------------------------------------------------------
+# Old domain · service worker kill switch. MUST stay above the 301 below.
+#
+# Installs on notebot.netlify.app carry a Workbox worker that answers navigations
+# from precache, so they'd never reach the network to see the redirect — and a
+# worker update whose script fetch lands on a redirect is specified to fail, which
+# would pin those installs to the old build permanently.
+#
+# So `/sw.js` on the old host is rewritten (status 200 — same URL, no redirect) to
+# a worker that clears the caches, unregisters itself and reloads its windows.
+# Those reloads hit the network and follow the 301. See public/sw-kill.js.
+# ---------------------------------------------------------------------------
+[[redirects]]
+  from = "https://notebot.netlify.app/sw.js"
+  to = "/sw-kill.js"
+  status = 200
+  force = true
+
+# ---------------------------------------------------------------------------
+# Old domain → new domain.
+#
+# The .netlify.app subdomain keeps serving the site after a custom domain is
+# attached, so the move to butexnotebot.com has to be forced here.
+#
+#  - `force = true` is required: without it the rule is only consulted when no
+#    real file matches, so `/` and every hashed asset would keep answering on
+#    the old host.
+#  - This block must stay ABOVE the SPA fallback. Netlify stops at the first
+#    match, and a `/*` catch-all above would swallow it.
+#  - The host is matched exactly, so deploy previews and branch deploys
+#    (deploy-preview-N--<site>.netlify.app) are unaffected.
+# ---------------------------------------------------------------------------
+[[redirects]]
+  from = "https://notebot.netlify.app/*"
+  to = "https://butexnotebot.com/:splat"
+  status = 301
+  force = true
+
+# ---------------------------------------------------------------------------
 # SPA fallback. Real files are served first, so this only catches client routes.
 # ---------------------------------------------------------------------------
 [[redirects]]

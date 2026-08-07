@@ -73,10 +73,7 @@ export default function LegalDoc({
 
       <p className="mt-2xl text-sm text-muted-foreground">
         See also{" "}
-        <AppLink
-          to={alsoRead.href}
-          className="link-accent inline font-medium text-accent"
-        >
+        <AppLink to={alsoRead.href} className="link-accent inline font-medium">
           {alsoRead.label}
         </AppLink>
         .

@@ -17,14 +17,14 @@ import type { ReactNode } from "react";
 
 const LAST_UPDATED = "August 7, 2026";
 
-/** Inline external link, matching the prose treatment. */
+/** Inline external link, matching the prose treatment. See privacy/index.tsx. */
 function Out({ href, children }: { href: string; children: ReactNode }) {
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="link-accent text-accent"
+      className="link-accent"
     >
       {children}
     </a>
