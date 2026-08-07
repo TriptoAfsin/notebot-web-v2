@@ -40,6 +40,8 @@ const SyllabusDept = lazy(() => import("@/pages/syllabus/dept/syllabus-dept"));
 const ResultsPage = lazy(() => import("@/pages/results"));
 const JokesPage = lazy(() => import("@/pages/jokes"));
 const TexGptPage = lazy(() => import("@/pages/tex-gpt"));
+const PrivacyPage = lazy(() => import("@/pages/privacy"));
+const TermsPage = lazy(() => import("@/pages/terms"));
 
 function App() {
   return (
@@ -100,6 +102,12 @@ function App() {
                   <Route path={APP_PATHS.RESULTS} element={<ResultsPage />} />
                     <Route path={APP_PATHS.JOKES} element={<JokesPage />} />
                     <Route path={APP_PATHS.TEX_GPT} element={<TexGptPage />} />
+
+                    <Route
+                      path={APP_PATHS.PRIVACY}
+                      element={<PrivacyPage />}
+                    />
+                    <Route path={APP_PATHS.TERMS} element={<TermsPage />} />
                   </Routes>
                 </Suspense>
               </RouteTransition>

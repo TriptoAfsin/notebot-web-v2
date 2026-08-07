@@ -6,10 +6,17 @@
  * column means there's no dead strip beneath it.
  */
 
+import AppLink from "@/components/atoms/links/app-link";
 import { APP_CONFIG } from "@/constants/app-config";
+import { APP_PATHS } from "@/constants/path-config";
 import { cn } from "@/lib/utils";
 
 const PALESTINE_FLAG = "/icons/palestine-flag.png";
+
+const LEGAL_LINKS = [
+  { label: "Privacy", href: APP_PATHS.PRIVACY },
+  { label: "Terms", href: APP_PATHS.TERMS },
+] as const;
 
 export default function Footer() {
   return (
@@ -22,10 +29,34 @@ export default function Footer() {
         // clears the home-indicator / system nav bar in the installed PWA
         style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
       >
-        <p className="label-mono order-2 sm:order-1">
-          © <span className="tabular">{new Date().getFullYear()}</span>{" "}
-          {APP_CONFIG.name}
-        </p>
+        {/* copyright and the legal pair travel together — one line on the left,
+            below the fold on mobile */}
+        <div className="order-2 flex flex-wrap items-center justify-center gap-x-md gap-y-xs sm:order-1 sm:justify-start">
+          <p className="label-mono">
+            © <span className="tabular">{new Date().getFullYear()}</span>{" "}
+            {APP_CONFIG.name}
+          </p>
+
+          <span
+            aria-hidden="true"
+            className="hidden h-4 w-px bg-rule-2 sm:block"
+          />
+
+          <nav aria-label="Legal" className="flex items-center gap-md">
+            {LEGAL_LINKS.map(link => (
+              <AppLink
+                key={link.href}
+                to={link.href}
+                className={cn(
+                  "label-mono affordance inline-block",
+                  "transition-colors duration-short ease-out hover:text-foreground"
+                )}
+              >
+                {link.label}
+              </AppLink>
+            ))}
+          </nav>
+        </div>
 
         <div
           className={cn(
