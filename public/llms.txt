@@ -1,0 +1,38 @@
+# NoteBot Web
+
+> A free, student-run archive of course material for BUTEX (Bangladesh University of Textiles) — class notes, lab reports, past question papers, syllabi and published results — plus TexGPT, an assistant that answers textile questions from that archive.
+
+Everything here is contributed by students. NoteBot is an independent project: it is not an official service of BUTEX, is not endorsed by the university, and nothing on it is an official university record. Notes and papers remain the copyright of whoever wrote them.
+
+Notes on reading this site programmatically:
+
+- It is a client-rendered single-page app, so fetching a page URL returns an application shell, not the content. Rendering the page in a browser is the way to read it.
+- Many notes, papers and syllabi are not files on this domain — they are links out to Google Drive and other hosts.
+- Material is organized by level (1–4), then subject, then topic. Syllabi are organized by admission batch, then department.
+
+## Pages
+
+- [Home](/): Launcher for every section of the archive.
+- [Notes](/notes): Class notes. Drill down as `/notes/{level}`, `/notes/{level}/{subject}`, `/notes/{level}/{subject}/{topic}`.
+- [Lab Reports](/lab-reports): Lab reports. Same shape: `/lab-reports/{level}/{subject}/{topic}`.
+- [Q-Bank](/q-bank): Past question papers and solves, as Google Drive folders per level.
+- [Syllabus](/syllabus): Syllabi by batch and department: `/syllabus/{batch}`, `/syllabus/{batch}/{dept}`.
+- [Results](/results): Published exam results, mirrored from official notices for convenience.
+- [TexGPT](/tex-gpt): Retrieval-augmented assistant over the archive. Limited to 10 questions per day per browser; answers can be wrong and should be checked against the source notes.
+- [About](/about): What NoteBot is and where else it runs.
+
+## Legal
+
+- [Privacy Policy](/privacy): No accounts and no personal data collected; aggregate usage analytics only.
+- [Terms of Use](/terms): Acceptable use, copyright and takedown, TexGPT accuracy disclaimer.
+
+## Optional
+
+- [NoteBot on Google Play](https://play.google.com/store/apps/details?id=com.hawkers.notebot): The Android app.
+- [NoteBot on Messenger](https://www.messenger.com/t/103148557940299): Ask for notes in chat; also the contact channel for takedown requests.
+- [Submit notes](https://forms.gle/RjPXedjRDim4YE6P8): Contribute material to the archive.
+- [BUTEX Phone Book](https://triptoafsin.github.io/butex-phonebook-v2/): Campus contact directory.
+- [Count Koto](https://triptoafsin.github.io/CountKoto-/): Textile yarn count converter.
+- [Jokes](/jokes): One-liners, on demand.
+- [Source code](https://github.com/TriptoAfsin/notebot-web-v2): This web app.
+- [Maintainer](https://www.triptex.me/): Afshin Nahian Tripto.
