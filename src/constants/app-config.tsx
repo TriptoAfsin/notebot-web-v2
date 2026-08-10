@@ -4,6 +4,7 @@ import {
   House,
   MessageCircle,
   Phone,
+  Settings,
   Smartphone,
   Wrench,
 } from "lucide-react";
@@ -72,5 +73,13 @@ export const APP_HEADER_MENU = [
     label: "Count Converter",
     href: "https://triptoafsin.github.io/CountKoto-/",
     isExternal: true,
+  },
+  // Last on purpose: it is the only destination here that changes how the app behaves rather
+  // than where you are, and it is what someone reaches for when content looks out of date.
+  {
+    id: 9001,
+    icon: <Settings size={20} strokeWidth={1.5} />,
+    label: "Settings",
+    href: "/settings",
   },
 ];
