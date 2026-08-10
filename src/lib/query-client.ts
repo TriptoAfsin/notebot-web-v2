@@ -32,8 +32,13 @@ export const queryClient = new QueryClient({
 const CACHE_KEY = "notebot-query-cache";
 
 /* Bump when a response shape changes — it throws away incompatible cached
- * payloads instead of feeding them to components that can't read them. */
-const CACHE_VERSION = "v1";
+ * payloads instead of feeding them to components that can't read them.
+ *
+ * v2: the note/lab trees were corrected server-side (516 topic labels, plus ~700 entries that
+ * had been frozen behind a stale compatibility snapshot in the engine). Existing visitors were
+ * holding the old labels, and no server-side cache flush can reach a persisted client cache —
+ * only this buster can. */
+const CACHE_VERSION = "v2";
 
 export const queryPersister = createSyncStoragePersister({
   storage: typeof window === "undefined" ? undefined : window.localStorage,

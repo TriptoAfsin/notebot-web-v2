@@ -57,5 +57,13 @@ export const STALE_TIME = {
   volatile: 0,
 } as const;
 
-/** Keep content in memory (and in the persisted cache) for a day. */
-export const GC_TIME = 24 * 60 * 60 * 1000;
+/* How long content survives in memory and in the persisted cache.
+ *
+ * This is the number that actually decides what a returning visitor sees, not the staleTime
+ * above: with `refetchOnMount` and `refetchOnWindowFocus` both off, staleness alone never
+ * triggers a refetch, so a cached tree is *served* for this long. At 24h a student could open
+ * the app on three consecutive mornings and still be reading a label that changed on day one —
+ * which is exactly what happened after a large content correction. Six hours keeps navigation
+ * instant within a study session while guaranteeing at most a half-day of drift.
+ */
+export const GC_TIME = 6 * 60 * 60 * 1000;

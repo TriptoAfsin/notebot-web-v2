@@ -44,6 +44,7 @@ const JokesPage = lazy(ROUTE_CHUNKS.jokes);
 const TexGptPage = lazy(ROUTE_CHUNKS.texGpt);
 const PrivacyPage = lazy(ROUTE_CHUNKS.privacy);
 const TermsPage = lazy(ROUTE_CHUNKS.terms);
+const SettingsPage = lazy(ROUTE_CHUNKS.settings);
 
 /**
  * The route Suspense boundary, keyed by how the next route will actually load.
@@ -161,6 +162,10 @@ function App() {
                       element={<PrivacyPage />}
                     />
                     <Route path={APP_PATHS.TERMS} element={<TermsPage />} />
+                    <Route
+                      path={APP_PATHS.SETTINGS}
+                      element={<SettingsPage />}
+                    />
                   </Routes>
                 </RouteBoundary>
               </RouteTransition>

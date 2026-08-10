@@ -18,6 +18,7 @@ const PALESTINE_FLAG_SRCSET =
   "/icons/palestine-flag-40.webp 40w, /icons/palestine-flag-80.webp 80w";
 
 const LEGAL_LINKS = [
+  { label: "Settings", href: APP_PATHS.SETTINGS },
   { label: "Privacy", href: APP_PATHS.PRIVACY },
   { label: "Terms", href: APP_PATHS.TERMS },
 ] as const;

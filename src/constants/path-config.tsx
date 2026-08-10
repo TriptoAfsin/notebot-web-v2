@@ -26,4 +26,5 @@ export const APP_PATHS = {
   TEX_GPT: "/tex-gpt",
   PRIVACY: "/privacy",
   TERMS: "/terms",
+  SETTINGS: "/settings",
 };
