@@ -24,7 +24,7 @@ import {
 import { APP_HEADER_MENU } from "@/constants/app-config";
 import { useGetPlatformStatus } from "@/hooks/networking/content/status";
 import { cn } from "@/lib/utils";
-import { Search } from "lucide-react";
+import { ArrowUpRight, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const menuItems = APP_HEADER_MENU;
@@ -149,6 +149,21 @@ function Header() {
               <span className="label-mono">
                 Platform {isLive ? "live" : "down"}
               </span>
+              <a
+                href="https://status.butexnotebot.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={handleCloseSheet}
+                className={cn(
+                  "label-mono ml-auto inline-flex items-center gap-0.5 rounded-control px-2xs py-0.5",
+                  "text-muted-foreground transition-colors duration-short ease-out",
+                  "hover:text-foreground",
+                  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal"
+                )}
+              >
+                Status
+                <ArrowUpRight className="h-3 w-3 shrink-0" aria-hidden="true" />
+              </a>
             </div>
           </SheetContent>
         </Sheet>
