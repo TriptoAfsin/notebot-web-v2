@@ -171,8 +171,11 @@ const SECTIONS: readonly LegalSection[] = [
     body: (
       <p>
         Questions about privacy, or a request to remove something you
-        contributed? Reach us on{" "}
-        <Out href={APP_CONFIG.botLink}>Messenger</Out> or through{" "}
+        contributed? Email{" "}
+        <a href={`mailto:${APP_CONFIG.supportEmail}`} className="link-accent">
+          {APP_CONFIG.supportEmail}
+        </a>
+        , reach us on <Out href={APP_CONFIG.botLink}>Messenger</Out> or through{" "}
         <Out href={APP_CONFIG.founder.web}>{APP_CONFIG.founder.name}</Out>, who
         maintains the project.
       </p>

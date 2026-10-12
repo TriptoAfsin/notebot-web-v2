@@ -169,8 +169,11 @@ const SECTIONS: readonly LegalSection[] = [
     heading: "Contact",
     body: (
       <p>
-        Takedown requests, corrections and anything else:{" "}
-        <Out href={APP_CONFIG.botLink}>message us on Messenger</Out> or reach{" "}
+        Takedown requests, corrections and anything else: email{" "}
+        <a href={`mailto:${APP_CONFIG.supportEmail}`} className="link-accent">
+          {APP_CONFIG.supportEmail}
+        </a>
+        , <Out href={APP_CONFIG.botLink}>message us on Messenger</Out> or reach{" "}
         <Out href={APP_CONFIG.founder.web}>{APP_CONFIG.founder.name}</Out>, who
         maintains the project. These terms are governed by the laws of
         Bangladesh.

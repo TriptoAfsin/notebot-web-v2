@@ -16,6 +16,7 @@ export const APP_CONFIG = {
   appLink: "https://play.google.com/store/apps/details?id=com.hawkers.notebot",
   botLink: "https://www.messenger.com/t/103148557940299",
   submitLink: "https://forms.gle/RjPXedjRDim4YE6P8",
+  supportEmail: "notebot@t21.dev",
   founder: {
     name: "Afshin Nahian Tripto",
     github: "https://github.com/TriptoAfsin",

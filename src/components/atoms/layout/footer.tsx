@@ -47,7 +47,10 @@ export default function Footer() {
             className="hidden h-4 w-px bg-rule-2 sm:block"
           />
 
-          <nav aria-label="Legal" className="flex items-center gap-md">
+          <nav
+            aria-label="Legal"
+            className="flex flex-wrap items-center justify-center gap-x-md gap-y-xs"
+          >
             {LEGAL_LINKS.map(link => (
               <AppLink
                 key={link.href}
@@ -60,6 +63,15 @@ export default function Footer() {
                 {link.label}
               </AppLink>
             ))}
+            <a
+              href={`mailto:${APP_CONFIG.supportEmail}`}
+              className={cn(
+                "label-mono affordance inline-block",
+                "transition-colors duration-short ease-out hover:text-foreground"
+              )}
+            >
+              Support
+            </a>
           </nav>
         </div>
 
