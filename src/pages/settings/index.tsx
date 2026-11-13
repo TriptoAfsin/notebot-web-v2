@@ -12,6 +12,7 @@
  */
 
 import { Button } from "@/components/ui/button";
+import { applyPwaUpdate } from "@/lib/pwa-update";
 import { queryClient } from "@/lib/query-client";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, Loader2, RefreshCw, Trash2 } from "lucide-react";
@@ -90,7 +91,6 @@ export default function SettingsPage() {
   const registrationRef = useRef<ServiceWorkerRegistration | null>(null);
   const {
     needRefresh: [needRefresh],
-    updateServiceWorker,
   } = useRegisterSW({
     onRegisteredSW(_url, registration) {
       registrationRef.current = registration ?? null;
@@ -241,7 +241,7 @@ export default function SettingsPage() {
           description="A new version installs in the background and waits until you reload."
         >
           {needRefresh ? (
-            <Button onClick={() => void updateServiceWorker(true)}>
+            <Button onClick={() => void applyPwaUpdate()}>
               <RefreshCw className="mr-1.5" aria-hidden="true" />
               Reload to update
             </Button>

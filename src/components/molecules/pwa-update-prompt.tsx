@@ -15,8 +15,9 @@
  */
 
 import { Button } from "@/components/ui/button";
+import { applyPwaUpdate } from "@/lib/pwa-update";
 import { cn } from "@/lib/utils";
-import { ArrowUpCircle, X } from "lucide-react";
+import { ArrowUpCircle, Loader2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useRegisterSW } from "virtual:pwa-register/react";
 
@@ -45,7 +46,6 @@ export default function PwaUpdatePrompt() {
 
   const {
     needRefresh: [needRefresh, setNeedRefresh],
-    updateServiceWorker,
   } = useRegisterSW({
     onRegisteredSW(_swUrl, registration) {
       if (!registration) return;
@@ -123,17 +123,31 @@ export default function PwaUpdatePrompt() {
         <Button
           size="sm"
           disabled={isUpdating}
+          aria-busy={isUpdating}
+          className="min-w-[6.5rem] gap-xs"
           onClick={() => {
             setIsUpdating(true);
-            // `true` activates the waiting worker and reloads the page for us.
-            void updateServiceWorker(true);
+            // Activates whatever worker is waiting right now and reloads,
+            // with a timed fallback so the card can never hang here.
+            void applyPwaUpdate();
           }}
         >
-          {isUpdating ? "Updating…" : "Reload"}
+          {isUpdating ? (
+            <>
+              <Loader2
+                className="h-3.5 w-3.5 shrink-0 animate-spin"
+                aria-hidden="true"
+              />
+              Updating…
+            </>
+          ) : (
+            "Reload"
+          )}
         </Button>
 
         <button
           type="button"
+          disabled={isUpdating}
           onClick={() => setNeedRefresh(false)}
           aria-label="Dismiss until next visit"
           className={cn(
