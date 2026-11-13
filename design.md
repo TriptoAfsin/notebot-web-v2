@@ -203,6 +203,10 @@ app** — this redesign replaces the visual and interaction layer only.
   sheet. The header's element order and position are unchanged from before.
 - **Footer — Ft2 inline single line.** Hairline rule above, one row: copyright,
   author credit, solidarity line. No columns, no social row.
+- **Support row** (above the footer line, and as a "Support NoteBot" group in the
+  nav sheet): GitHub star with the live count, Patreon, SupportKori. Brand marks
+  are a fourth icon role (`icons/brand-marks.tsx`, filled, ≤ 18 px), tinted by the
+  `patreon` / `tip` tokens. Text links only, never buttons or a banner.
 
 ## CTA voice
 

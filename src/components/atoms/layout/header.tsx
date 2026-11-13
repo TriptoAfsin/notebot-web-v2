@@ -8,6 +8,7 @@
 
 import BrandLogo from "@/components/atoms/brand-logo";
 import HeaderLinkMobile from "@/components/atoms/header-link-mobile";
+import { GithubMark, PatreonMark } from "@/components/atoms/icons/brand-marks";
 import MenuMorph from "@/components/atoms/icons/morph/menu-morph";
 import ThemeMorph from "@/components/atoms/icons/morph/theme-morph";
 import CommandPalette, {
@@ -21,11 +22,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { APP_HEADER_MENU } from "@/constants/app-config";
+import { APP_CONFIG, APP_HEADER_MENU } from "@/constants/app-config";
+import { useGithubStars } from "@/hooks/networking/content/github-stars";
 import { useGetPlatformStatus } from "@/hooks/networking/content/status";
 import { cn } from "@/lib/utils";
-import { ArrowUpRight, Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ArrowUpRight, Coffee, Search } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
 
 const menuItems = APP_HEADER_MENU;
 
@@ -37,11 +39,54 @@ const CONTROL = cn(
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal"
 );
 
+const SUPPORT_ROW = cn(
+  "flex items-center gap-sm rounded-control px-sm py-1.5 min-h-[52px]",
+  "transition-colors duration-short ease-out hover:bg-paper-3",
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal"
+);
+
+function SupportLink({
+  href,
+  icon,
+  label,
+  detail,
+  onSelect,
+}: {
+  href: string;
+  icon: ReactNode;
+  label: string;
+  detail: string;
+  onSelect: () => void;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={onSelect}
+      className={SUPPORT_ROW}
+    >
+      <span className="flex w-[18px] shrink-0 justify-center">{icon}</span>
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="affordance truncate text-base font-medium text-ink-2">
+          {label}
+        </span>
+        <span className="truncate text-sm text-muted-foreground">{detail}</span>
+      </span>
+      <ArrowUpRight
+        className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+        aria-hidden="true"
+      />
+    </a>
+  );
+}
+
 function Header() {
   const { theme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { data: status } = useGetPlatformStatus();
+  const { data: stars } = useGithubStars();
   const palette = useCommandPalette();
 
   /* The header only earns its blur and shadow once content is behind it. */
@@ -111,7 +156,7 @@ function Header() {
             </button>
           </SheetTrigger>
 
-          <SheetContent side="right">
+          <SheetContent side="right" className="overflow-y-auto">
             <SheetHeader>
               <SheetTitle className="sr-only">Navigation</SheetTitle>
               {/* pr-12 keeps the mark clear of the close button */}
@@ -134,6 +179,44 @@ function Header() {
                 />
               ))}
             </nav>
+
+            <section
+              aria-label="Support NoteBot"
+              className="-mx-2xs mt-lg grid gap-3xs border-t border-rule pt-md"
+            >
+              <span className="label-mono px-sm pb-2xs">Support NoteBot</span>
+              <SupportLink
+                href={APP_CONFIG.support.github}
+                icon={<GithubMark className="h-[18px] w-[18px] text-foreground" />}
+                label="Star on GitHub"
+                detail={
+                  typeof stars === "number"
+                    ? `The engine is open source · ${stars} ${stars === 1 ? "star" : "stars"}`
+                    : "The engine is open source"
+                }
+                onSelect={handleCloseSheet}
+              />
+              <SupportLink
+                href={APP_CONFIG.support.patreon}
+                icon={<PatreonMark className="h-[17px] w-[17px] text-patreon" />}
+                label="Back us on Patreon"
+                detail="Monthly support keeps servers on"
+                onSelect={handleCloseSheet}
+              />
+              <SupportLink
+                href={APP_CONFIG.support.supportKori}
+                icon={
+                  <Coffee
+                    className="h-[18px] w-[18px] text-tip"
+                    strokeWidth={1.75}
+                    aria-hidden="true"
+                  />
+                }
+                label="Tip in taka"
+                detail="As much as you can, on SupportKori"
+                onSelect={handleCloseSheet}
+              />
+            </section>
 
             {/* Status sits where it always did — pinned bottom-right of the
                 sheet — but the dot carries the state alongside the word, so it

@@ -10,6 +10,7 @@
 export const queryKeys = {
   status: () => ["status"] as const,
   jokes: () => ["jokes"] as const,
+  githubStars: (repo: string) => ["github-stars", repo] as const,
   results: (limit?: number) => ["results", limit ?? null] as const,
 
   notes: {
@@ -53,6 +54,9 @@ export const STALE_TIME = {
   results: 5 * 60 * 1000,
   /** Platform up/down badge. */
   status: 60 * 1000,
+  /** Live GitHub star count. Short enough to feel live, long enough to stay
+   *  well under GitHub's 60 unauthenticated requests an hour. */
+  stars: 5 * 60 * 1000,
   /** Jokes are the point of asking again. Never cache. */
   volatile: 0,
 } as const;

@@ -82,6 +82,8 @@ module.exports = {
         },
         danger: "oklch(var(--c-danger) / <alpha-value>)",
         success: "oklch(var(--c-success) / <alpha-value>)",
+        patreon: "oklch(var(--c-patreon) / <alpha-value>)",
+        tip: "oklch(var(--c-tip) / <alpha-value>)",
       },
 
       fontFamily: {

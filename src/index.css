@@ -51,6 +51,11 @@
     --c-danger: 55% 0.19 27;
     --c-success: 58% 0.13 155;
 
+    /* Brand marks on the support links (Patreon coral, SupportKori tea).
+       Small glyphs only, never fills. */
+    --c-patreon: 60% 0.2 25;
+    --c-tip: 60% 0.13 70;
+
     /* Avatar gradient — accent into violet. Identity, not decoration: the ban on
        gradients covers headlines and hero backgrounds, not an avatar chip. */
     /* Blue → teal, not blue → magenta. A blue-to-purple gradient is the single
@@ -197,6 +202,9 @@
 
     --c-danger: 68% 0.17 27;
     --c-success: 72% 0.12 155;
+
+    --c-patreon: 70% 0.16 25;
+    --c-tip: 74% 0.12 70;
 
     --c-avatar-from: 66% 0.175 258;
     --c-avatar-to: 70% 0.14 198;

@@ -25,6 +25,13 @@ export const APP_CONFIG = {
   limit: {
     texGpt: 10,
   },
+  support: {
+    /** owner/name — the star count is read live from the GitHub API. */
+    githubRepo: "TriptoAfsin/notebot-engine-v1",
+    github: "https://github.com/TriptoAfsin/notebot-engine-v1",
+    patreon: "https://www.patreon.com/c/triptex",
+    supportKori: "https://www.supportkori.com/triptex",
+  },
 };
 
 export const APP_HEADER_MENU = [
