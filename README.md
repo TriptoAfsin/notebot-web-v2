@@ -13,3 +13,7 @@ All of NoteBot's content is now available on the web!
 - [x] 🌙 Dark Mode Support
 - [x] 📱 Responsive Design
 - [x] 📱 PWA Support
+
+## Support NoteBot
+
+NoteBot has been free for every BUTEX student since 2018, and it stays that way. If it helped you through an exam, you can help keep it running on [Patreon](https://www.patreon.com/triptex). Support pays for the servers, the bots and app store fees.
