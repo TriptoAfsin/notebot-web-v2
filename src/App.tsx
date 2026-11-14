@@ -45,6 +45,7 @@ const TexGptPage = lazy(ROUTE_CHUNKS.texGpt);
 const PrivacyPage = lazy(ROUTE_CHUNKS.privacy);
 const TermsPage = lazy(ROUTE_CHUNKS.terms);
 const SettingsPage = lazy(ROUTE_CHUNKS.settings);
+const SupportersPage = lazy(ROUTE_CHUNKS.supporters);
 
 /**
  * The route Suspense boundary, keyed by how the next route will actually load.
@@ -165,6 +166,10 @@ function App() {
                     <Route
                       path={APP_PATHS.SETTINGS}
                       element={<SettingsPage />}
+                    />
+                    <Route
+                      path={APP_PATHS.SUPPORTERS}
+                      element={<SupportersPage />}
                     />
                   </Routes>
                 </RouteBoundary>
