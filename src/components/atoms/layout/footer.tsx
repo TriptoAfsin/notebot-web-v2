@@ -58,7 +58,14 @@ function SupportRow() {
       )}
     >
       <p className="text-sm text-muted-foreground">
-        NoteBot is free and open source. Help keep it running.
+        NoteBot is free and open source. Help keep it running, like{" "}
+        <AppLink
+          to={APP_PATHS.SUPPORTERS}
+          className="inline link-accent font-medium"
+        >
+          our supporters
+        </AppLink>
+        .
       </p>
 
       <nav

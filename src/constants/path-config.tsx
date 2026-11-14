@@ -27,4 +27,5 @@ export const APP_PATHS = {
   PRIVACY: "/privacy",
   TERMS: "/terms",
   SETTINGS: "/settings",
+  SUPPORTERS: "/supporters",
 };
